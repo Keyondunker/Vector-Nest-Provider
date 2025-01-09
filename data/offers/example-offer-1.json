@@ -1,0 +1,14 @@
+{
+  "deploymentParams": {
+    "region": "eu-east-1",
+    "availableRam": "30",
+    "updateStrategy": "rolling-release"
+  },
+  "region": "Europe_East",
+  "resourceParams": [
+    {
+      "name": "RAM",
+      "value": "30"
+    }
+  ]
+}

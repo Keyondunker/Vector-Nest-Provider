@@ -1,0 +1,43 @@
+{
+  "name": "provider-template",
+  "version": "0.0.1",
+  "description": "Template description",
+  "homepage": "https://github.com/dbForest/provider-template#readme",
+  "bugs": {
+    "url": "https://github.com/dbForest/provider-template/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dbForest/provider-template.git"
+  },
+  "license": "ISC",
+  "author": "Forest Protocol Development Team",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "start:dev": "dotenvx run -- tsx src/index.ts",
+    "start": "dotenvx run -- node dist/index.js",
+    "build": "tsup",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsc-alias": "^1.8.10",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.32.1",
+    "ansis": "^3.7.0",
+    "ethers": "^6.13.5",
+    "viem": "^2.22.4",
+    "web3": "^4.16.0",
+    "zod": "^3.24.1"
+  }
+}
