@@ -1,22 +1,17 @@
 import { config } from "@/config";
-import { BaseProvider } from "@/product/BaseProvider";
-import { BaseResourceDetails } from "@/product/details";
-import {
-  OnChainResource,
-  PipeMethod,
-  PipeResponseCode,
-  XMTPPipe,
-} from "forest-js";
+import { BaseProvider } from "@/product-category/BaseProvider";
+import { BaseResourceDetails } from "@/product-category/details";
+import { Agreement, PipeMethod, PipeResponseCode, XMTPPipe } from "forest-js";
 
 /**
- * The main class the should be implemented by the provider.
+ * The main class that should be implemented by the provider.
  * @responsible Provider
  */
 export class Provider extends BaseProvider {
-  pipe: XMTPPipe = new XMTPPipe("0x<provider operator private ket>");
+  pipe = new XMTPPipe("0x<provider operator private key>");
 
   async generateAuthentication(
-    onChainResource: OnChainResource
+    agreement: Agreement
   ): Promise<BaseResourceDetails> {
     throw new Error("Method not implemented.");
   }
@@ -40,23 +35,19 @@ export class Provider extends BaseProvider {
     });
   }
 
-  async create(onChainResource: OnChainResource): Promise<BaseResourceDetails> {
+  async create(agreement: Agreement): Promise<BaseResourceDetails> {
     throw new Error("Method not implemented.");
   }
 
-  async getDetails(
-    onChainResource: OnChainResource
-  ): Promise<BaseResourceDetails> {
+  async getDetails(agreement: Agreement): Promise<BaseResourceDetails> {
     throw new Error("Method not implemented.");
   }
 
-  async delete(onChainResource: OnChainResource): Promise<BaseResourceDetails> {
+  async delete(agreement: Agreement): Promise<BaseResourceDetails> {
     throw new Error("Method not implemented.");
   }
 
-  async checkBalance(
-    onChainResource: OnChainResource
-  ): Promise<BaseResourceDetails> {
+  async checkBalance(agreement: Agreement): Promise<BaseResourceDetails> {
     throw new Error("Method not implemented.");
   }
 }

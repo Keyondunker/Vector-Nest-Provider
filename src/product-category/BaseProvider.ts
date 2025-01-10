@@ -1,6 +1,6 @@
 import { AbstractProvider } from "@/abstract/AbstractProvider";
-import { OnChainResource } from "forest-js";
 import { BaseResourceDetails } from "./details";
+import { Agreement } from "forest-js";
 
 /**
  * Base provider that defines what kind of actions needs to be implemented for the product category.
@@ -8,11 +8,11 @@ import { BaseResourceDetails } from "./details";
  */
 export abstract class BaseProvider extends AbstractProvider<BaseResourceDetails> {
   /**
-   * An example special function that all of the providers of this product category need to implement.
-   * @param onChainResource Information about the resource
+   * An example function that all of the providers of this product category need to implement.
+   * @param agreement On-chain agreement of the resource
    * @responsible Product Category Owner
    */
   abstract generateAuthentication(
-    onChainResource: OnChainResource
+    agreement: Agreement
   ): Promise<BaseResourceDetails>;
 }

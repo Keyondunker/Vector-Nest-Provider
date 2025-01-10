@@ -4,7 +4,10 @@ import { Chain } from "forest-js";
 
 const configSchema = z.object({
   RPC_HOST: z.string().nonempty("Empty variable"),
-  CHAIN: z.nativeEnum(Chain),
+  CHAIN: z
+    .enum(["Local", "OptimismMainnet", "OptimismTestnet"])
+    .default("Local")
+    .transform((value) => Chain[value]),
 });
 const parsedEnv = configSchema.safeParse(process.env, {});
 
