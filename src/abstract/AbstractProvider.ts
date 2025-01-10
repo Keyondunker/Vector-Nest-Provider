@@ -1,12 +1,22 @@
 import { MethodNotImplemented } from "@/errors/MethodNotImplemented";
 import { ResourceDetails } from "@/types";
-import { OnChainResource } from "forest-js";
+import { AbstractPipe, OnChainResource } from "forest-js";
 
 /**
  * Abstract provider that needs to be extended by the Product Category Owner.
  * @responsible Admin
  */
 export abstract class AbstractProvider<T extends ResourceDetails> {
+  /**
+   * Communication pipe to let users to interact with their resources.
+   */
+  abstract pipe: AbstractPipe;
+
+  /**
+   * Initializes the provider if it needs some async operation to be done before start to use it.
+   */
+  abstract init(): Promise<void> | void;
+
   /**
    * Creates the actual resource based
    * @param onChainResource Information about the resource
@@ -38,16 +48,6 @@ export abstract class AbstractProvider<T extends ResourceDetails> {
    * @returns Consumed response from the service
    */
   async consume(onChainResource: OnChainResource, args?: any): Promise<any> {
-    throw new MethodNotImplemented();
-  }
-
-  /**
-   * Depends on the implementation, resets somethings the resource has.
-   * @param onChainResource Information about the resource
-   * @param args Arguments about what reset operation will be done (depends on the implementation)
-   * @returns Information about what is reset
-   */
-  async reset(onChainResource: OnChainResource, args?: any): Promise<any> {
     throw new MethodNotImplemented();
   }
 }
