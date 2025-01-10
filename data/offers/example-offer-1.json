@@ -4,11 +4,14 @@
     "availableRam": "30",
     "updateStrategy": "rolling-release"
   },
-  "region": "Europe_East",
   "resourceParams": [
     {
       "name": "RAM",
       "value": "30"
+    },
+    {
+      "name": "Region",
+      "value": "Europe_East"
     }
   ]
 }
