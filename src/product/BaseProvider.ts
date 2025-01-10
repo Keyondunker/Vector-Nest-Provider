@@ -8,8 +8,9 @@ import { BaseResourceDetails } from "./details";
  */
 export abstract class BaseProvider extends AbstractProvider<BaseResourceDetails> {
   /**
-   * A special function that all of the providers of this product category need to implement.
+   * An example special function that all of the providers of this product category need to implement.
    * @param onChainResource Information about the resource
+   * @responsible Product Category Owner
    */
   abstract generateAuthentication(
     onChainResource: OnChainResource

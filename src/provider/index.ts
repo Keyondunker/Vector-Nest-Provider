@@ -1,4 +1,4 @@
-import { BaseProvider } from "@/product/base-provider";
+import { BaseProvider } from "@/product/BaseProvider";
 import { BaseResourceDetails } from "@/product/details";
 import { OnChainResource } from "forest-js";
 

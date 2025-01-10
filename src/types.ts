@@ -1,7 +1,7 @@
 import { DeploymentStatus } from "forest-js";
 
 /**
- * The details gathered by the provider from the actual resource source.
+ * The base details should be gathered by the provider from the actual resource source.
  */
 export interface ResourceDetails {
   status: DeploymentStatus;
