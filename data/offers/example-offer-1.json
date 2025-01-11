@@ -4,10 +4,10 @@
     "availableRam": "30",
     "updateStrategy": "rolling-release"
   },
-  "resourceParams": [
+  "parameters": [
     {
       "name": "RAM",
-      "value": "30"
+      "value": 30
     },
     {
       "name": "Region",

@@ -8,6 +8,7 @@ const configSchema = z.object({
     .enum(["Local", "OptimismMainnet", "OptimismTestnet"])
     .default("Local")
     .transform((value) => Chain[value]),
+  DATABASE_URL: z.string().nonempty("Empty variable"),
 });
 const parsedEnv = configSchema.safeParse(process.env, {});
 
