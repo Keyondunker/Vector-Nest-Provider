@@ -3,7 +3,7 @@ import {
   Agreement,
   ForestProtocolMarketplaceABI,
   Marketplace,
-} from "forest-js";
+} from "forestprotocol";
 import { Provider } from "./provider";
 import { config } from "./config";
 import { createPublicClient, parseEventLogs, webSocket } from "viem";

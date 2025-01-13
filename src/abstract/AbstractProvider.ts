@@ -1,6 +1,6 @@
 import { MethodNotImplemented } from "@/errors/MethodNotImplemented";
 import { ResourceDetails } from "@/types";
-import { Agreement, XMTPPipe } from "forest-js";
+import { Agreement, XMTPPipe } from "forestprotocol";
 
 /**
  * Abstract provider that needs to be extended by the Product Category Owner.

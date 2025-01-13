@@ -1,7 +1,7 @@
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
 import { config } from "@/config";
-import { NotInitialized } from "forest-js";
+import { NotInitialized } from "forestprotocol";
 import { and, desc, eq } from "drizzle-orm";
 import pg from "pg";
 

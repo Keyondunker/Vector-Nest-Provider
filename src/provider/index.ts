@@ -1,7 +1,7 @@
 import { config } from "@/config";
 import { BaseProvider } from "@/product-category/BaseProvider";
 import { BaseResourceDetails } from "@/product-category/details";
-import { Agreement, XMTPPipe } from "forest-js";
+import { Agreement, XMTPPipe } from "forestprotocol";
 import { Address } from "viem";
 
 /**
