@@ -1,4 +1,4 @@
-import { ResourceDetails } from "@/types";
+import { ResourceDetails } from "forestprotocol";
 
 /**
  * The details gathered by the provider from the resource source.

@@ -1,6 +1,6 @@
-import { AbstractProvider } from "@/abstract/AbstractProvider";
 import { BaseResourceDetails } from "./details";
 import {
+  AbstractProvider,
   Agreement,
   Marketplace,
   PipeMethod,
