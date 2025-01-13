@@ -2,11 +2,12 @@
 import {
   Agreement,
   ForestProtocolMarketplaceABI,
+  getForestContractAddress,
   Marketplace,
 } from "forestprotocol";
 import { Provider } from "./provider";
 import { config } from "./config";
-import { createPublicClient, parseEventLogs, webSocket } from "viem";
+import { createPublicClient, http, parseEventLogs } from "viem";
 import { LocalStorage } from "./database/LocalStorage";
 import { logger } from "./logger";
 import { privateKeyToAccount } from "viem/accounts";
@@ -19,7 +20,7 @@ async function sleep(ms: number) {
 class Program {
   rpcClient = createPublicClient({
     chain: config.CHAIN,
-    transport: webSocket(`ws://${config.RPC_HOST}`),
+    transport: http(`http://${config.RPC_HOST}`),
   });
   marketplace = Marketplace.createWithClient(this.rpcClient);
   provider = new Provider();
@@ -81,49 +82,53 @@ class Program {
 
       logger.info(`Processing block ${this.colorBlockNumber(block.number)}`);
       for (const tx of block.transactions) {
-        const receipt = await this.rpcClient.getTransactionReceipt({
-          hash: tx.hash,
-        });
+        if (tx.to === getForestContractAddress(config.CHAIN)) {
+          const receipt = await this.rpcClient.getTransactionReceipt({
+            hash: tx.hash,
+          });
 
-        if (receipt.status == "reverted") {
-          logger.info(`${this.colorTxHash(tx.hash)} is reverted, skipping...`);
-          continue;
-        }
+          if (receipt.status == "reverted") {
+            logger.info(
+              `${this.colorTxHash(tx.hash)} is reverted, skipping...`
+            );
+            continue;
+          }
 
-        const txRecord = await LocalStorage.instance.getTransaction(
-          tx.blockNumber,
-          tx.hash
-        );
-
-        if (txRecord?.isProcessed) {
-          logger.info(
-            `${this.colorTxHash(tx.hash)} is already processed, skipping...`
+          const txRecord = await LocalStorage.instance.getTransaction(
+            tx.blockNumber,
+            tx.hash
           );
-          continue;
-        }
 
-        const events = parseEventLogs({
-          abi: ForestProtocolMarketplaceABI,
-          logs: receipt.logs,
-        });
+          if (txRecord?.isProcessed) {
+            logger.info(
+              `${this.colorTxHash(tx.hash)} is already processed, skipping...`
+            );
+            continue;
+          }
 
-        for (const event of events) {
-          if (
-            event.eventName === "AgreementCreated" &&
-            event.args.providerOwnerAddr == this.providerWalletAddress
-          ) {
-            const agreement = await this.marketplace.getAgreement(
-              Number(event.args.id)
-            );
-            await this.processAgreementCreated(agreement);
-          } else if (
-            event.eventName === "AgreementCreated" &&
-            event.args.providerOwnerAddr == this.providerWalletAddress
-          ) {
-            const agreement = await this.marketplace.getAgreement(
-              Number(event.args.id)
-            );
-            await this.processAgreementClosed(agreement);
+          const events = parseEventLogs({
+            abi: ForestProtocolMarketplaceABI,
+            logs: receipt.logs,
+          });
+
+          for (const event of events) {
+            if (
+              event.eventName === "AgreementCreated" &&
+              event.args.providerOwnerAddr == this.providerWalletAddress
+            ) {
+              const agreement = await this.marketplace.getAgreement(
+                Number(event.args.id)
+              );
+              await this.processAgreementCreated(agreement);
+            } else if (
+              event.eventName === "AgreementCreated" &&
+              event.args.providerOwnerAddr == this.providerWalletAddress
+            ) {
+              const agreement = await this.marketplace.getAgreement(
+                Number(event.args.id)
+              );
+              await this.processAgreementClosed(agreement);
+            }
           }
         }
       }
@@ -168,7 +173,7 @@ class Program {
 
       if (block) return;
 
-      await sleep(1000);
+      await sleep(3000);
     }
   }
 
