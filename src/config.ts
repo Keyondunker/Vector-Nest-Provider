@@ -1,14 +1,24 @@
 import { z } from "zod";
 import { red } from "ansis";
-import { Chain } from "forest-js";
+import { anvil, optimism, optimismSepolia } from "viem/chains";
 
 const configSchema = z.object({
   RPC_HOST: z.string().nonempty("Empty variable"),
   CHAIN: z
-    .enum(["Local", "OptimismMainnet", "OptimismTestnet"])
-    .default("Local")
-    .transform((value) => Chain[value]),
+    .enum(["anvil", "optimism", "optimismSepolia"])
+    .default("anvil")
+    .transform((value) => ({ anvil, optimism, optimismSepolia }[value])),
   DATABASE_URL: z.string().nonempty("Empty variable"),
+  LOG_LEVEL: z.enum(["error", "warning", "info", "debug"]).default("debug"),
+  NODE_ENV: z.enum(["dev", "production"]).default("dev"),
+  OPERATOR_WALLET_PRIVATE_KEY: z
+    .string()
+    .nonempty("Empty variable")
+    .startsWith("0x", 'Private key must start with "0x" prefix'),
+  PROVIDER_WALLET_PRIVATE_KEY: z
+    .string()
+    .nonempty("Empty variable")
+    .startsWith("0x", 'Private key must start with "0x" prefix'),
 });
 const parsedEnv = configSchema.safeParse(process.env, {});
 
