@@ -1,20 +1,18 @@
 import { config } from "@/config";
 import { BaseProvider } from "@/product-category/BaseProvider";
 import { BaseResourceDetails } from "@/product-category/details";
-import { Agreement, PipeMethod, PipeResponseCode, XMTPPipe } from "forest-js";
+import { Agreement, XMTPPipe } from "forest-js";
+import { Address } from "viem";
 
 /**
- * The main class that should be implemented by the provider.
- * @responsible Provider
+ * The main class that implements provider specific actions.
  */
 export class Provider extends BaseProvider {
-  pipe = new XMTPPipe("0x<provider operator private key>");
-
-  async generateAuthentication(
-    agreement: Agreement
-  ): Promise<BaseResourceDetails> {
-    throw new Error("Method not implemented.");
-  }
+  /**
+   * Don't edit this section.
+   * @responsible Product Category Owner
+   */
+  pipe = new XMTPPipe(config.OPERATOR_WALLET_PRIVATE_KEY as Address);
 
   async init() {
     await this.pipe.init({
@@ -23,16 +21,21 @@ export class Provider extends BaseProvider {
       env: "dev",
     });
 
-    await this.pipe.route(PipeMethod.GET, "/", (req) => {
-      if (req.body?.name == "example-1") {
-        return {
-          code: PipeResponseCode.OK,
-          body: {
-            status: "ok",
-          },
-        };
-      }
-    });
+    await super.init();
+  }
+
+  /**
+   * Implement the below methods according to your custom logics
+   * @responsible Provider
+   */
+  async generateAuthentication(
+    agreement: Agreement
+  ): Promise<BaseResourceDetails> {
+    throw new Error("Method not implemented.");
+  }
+
+  async resetCredentials(agreement: Agreement): Promise<any> {
+    throw new Error("Method not implemented.");
   }
 
   async create(agreement: Agreement): Promise<BaseResourceDetails> {
