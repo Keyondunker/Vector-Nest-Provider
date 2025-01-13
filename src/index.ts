@@ -24,6 +24,7 @@ class Program {
   });
   marketplace = Marketplace.createWithClient(this.rpcClient);
   provider = new Provider();
+  contractAddress = getForestContractAddress(config.CHAIN);
   providerWalletAddress = privateKeyToAccount(
     config.PROVIDER_WALLET_PRIVATE_KEY as `0x${string}`
   )?.address;
@@ -82,57 +83,67 @@ class Program {
 
       logger.info(`Processing block ${this.colorBlockNumber(block.number)}`);
       for (const tx of block.transactions) {
-        if (tx.to === getForestContractAddress(config.CHAIN)) {
-          const receipt = await this.rpcClient.getTransactionReceipt({
-            hash: tx.hash,
-          });
+        if (tx.to?.toLowerCase() !== this.contractAddress.toLowerCase()) {
+          continue;
+        }
 
-          if (receipt.status == "reverted") {
-            logger.info(
-              `${this.colorTxHash(tx.hash)} is reverted, skipping...`
-            );
-            continue;
-          }
+        const receipt = await this.rpcClient.getTransactionReceipt({
+          hash: tx.hash,
+        });
 
-          const txRecord = await LocalStorage.instance.getTransaction(
-            tx.blockNumber,
-            tx.hash
+        if (receipt.status == "reverted") {
+          logger.info(`${this.colorTxHash(tx.hash)} is reverted, skipping...`);
+          continue;
+        }
+
+        const txRecord = await LocalStorage.instance.getTransaction(
+          tx.blockNumber,
+          tx.hash
+        );
+
+        if (txRecord?.isProcessed) {
+          logger.info(
+            `${this.colorTxHash(tx.hash)} is already processed, skipping...`
           );
+          continue;
+        }
 
-          if (txRecord?.isProcessed) {
-            logger.info(
-              `${this.colorTxHash(tx.hash)} is already processed, skipping...`
+        const events = parseEventLogs({
+          abi: ForestProtocolMarketplaceABI,
+          logs: receipt.logs,
+        });
+
+        for (const event of events) {
+          if (
+            event.eventName === "AgreementCreated" &&
+            event.args.providerOwnerAddr == this.providerWalletAddress
+          ) {
+            const agreement = await this.marketplace.getAgreement(
+              Number(event.args.id)
             );
-            continue;
-          }
-
-          const events = parseEventLogs({
-            abi: ForestProtocolMarketplaceABI,
-            logs: receipt.logs,
-          });
-
-          for (const event of events) {
-            if (
-              event.eventName === "AgreementCreated" &&
-              event.args.providerOwnerAddr == this.providerWalletAddress
-            ) {
-              const agreement = await this.marketplace.getAgreement(
-                Number(event.args.id)
-              );
-              await this.processAgreementCreated(agreement);
-            } else if (
-              event.eventName === "AgreementCreated" &&
-              event.args.providerOwnerAddr == this.providerWalletAddress
-            ) {
-              const agreement = await this.marketplace.getAgreement(
-                Number(event.args.id)
-              );
-              await this.processAgreementClosed(agreement);
-            }
+            await this.processAgreementCreated(agreement);
+            await this.localStorage.saveTxAsProcessed(
+              event.blockNumber,
+              event.transactionHash
+            );
+          } else if (
+            event.eventName === "AgreementClosed" &&
+            event.args.providerOwnerAddr == this.providerWalletAddress
+          ) {
+            const agreement = await this.marketplace.getAgreement(
+              Number(event.args.id)
+            );
+            await this.processAgreementClosed(agreement);
+            await this.localStorage.saveTxAsProcessed(
+              event.blockNumber,
+              event.transactionHash
+            );
           }
         }
       }
 
+      // Empty hash means block itself, so this block is completely processed
+      await LocalStorage.instance.saveTxAsProcessed(currentBlockNumber, "");
       currentBlockNumber++;
     }
   }
@@ -146,14 +157,9 @@ class Program {
     const latestProcessedBlock =
       await LocalStorage.instance.getLatestProcessedBlockHeight();
 
-    // If we already have a latest processed block info, start from the next block
-    if (latestProcessedBlock) {
-      return latestProcessedBlock + 1n;
-    }
-
     // TODO: Find the registration TX of the provider and start from there
 
-    return await this.rpcClient.getBlockNumber();
+    return latestProcessedBlock || (await this.rpcClient.getBlockNumber());
   }
 
   async getBlock(num: bigint) {
@@ -187,3 +193,11 @@ class Program {
 
 const program = new Program();
 program.main();
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+interface BigInt {
+  /** Convert to BigInt to string form in JSON.stringify */
+  toJSON: () => string;
+}
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
