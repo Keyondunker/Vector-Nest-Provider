@@ -1,6 +1,14 @@
 import { OfferParameterType } from "@/constants";
 import { relations } from "drizzle-orm";
-import { boolean, integer, json, pgTable, varchar } from "drizzle-orm/pg-core";
+import {
+  bigint,
+  boolean,
+  integer,
+  json,
+  pgTable,
+  primaryKey,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { DeploymentStatus } from "forest-js";
 
 export const resourcesTable = pgTable("resources", {
@@ -58,7 +66,16 @@ relations(offerParametersTable, ({ one }) => ({
   }),
 }));
 
-export const blockchainTable = pgTable("blockchain", {
-  height: integer().primaryKey(),
-  isProcessed: boolean("is_processed").notNull(),
-});
+export const blockchainTxsTable = pgTable(
+  "blockchain_transactions",
+  {
+    height: bigint({ mode: "bigint" }).notNull(),
+    hash: varchar({ length: 70 }).notNull(),
+    isProcessed: boolean("is_processed").notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.height, table.hash],
+    }),
+  ]
+);
