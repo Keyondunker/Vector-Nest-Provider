@@ -25,6 +25,7 @@ export const resourcesTable = pgTable("resources", {
   offerId: integer("offer_id")
     .references(() => offersTable.id)
     .notNull(),
+  isActive: boolean("is_active").notNull().default(true),
 });
 relations(resourcesTable, ({ one }) => ({
   offer: one(offersTable, {
@@ -85,3 +86,6 @@ export const providerDetailsTable = pgTable("provider_details", {
   name: varchar({ length: 20 }).notNull(),
   value: varchar({ length: 200 }).notNull(),
 });
+
+export type DbResourceInsert = typeof resourcesTable.$inferInsert;
+export type DbResourceSelect = typeof resourcesTable.$inferSelect;
