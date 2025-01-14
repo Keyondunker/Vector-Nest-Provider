@@ -58,12 +58,15 @@ class Program {
 
   async main() {
     await this.init();
+    await this.provider.init();
 
+    logger.info(
+      `Provider address: ${ansis.yellow.bold(this.providerAccount.address)}`
+    );
     logger.info("Started to listening blockchain events");
     let currentBlockNumber = await this.findStartBlock();
 
     while (true) {
-      await sleep(100);
       const block = await this.getBlock(currentBlockNumber);
 
       if (!block) {
