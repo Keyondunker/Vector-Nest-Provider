@@ -7,7 +7,7 @@ import {
   PipeMethod,
   PipeResponseCode,
   XMTPPipe,
-} from "@forestprotocols/sdk";
+} from "@forest-protocols/sdk";
 import { Address } from "viem";
 
 /**

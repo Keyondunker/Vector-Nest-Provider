@@ -1,6 +1,6 @@
 import { BaseProvider } from "@/product-category/BaseProvider";
 import { BaseResourceDetails } from "@/product-category/details";
-import { Agreement } from "@forestprotocols/sdk";
+import { Agreement } from "@forest-protocols/sdk";
 
 /**
  * The main class that implements provider specific actions.

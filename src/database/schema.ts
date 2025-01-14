@@ -9,7 +9,7 @@ import {
   primaryKey,
   varchar,
 } from "drizzle-orm/pg-core";
-import { DeploymentStatus } from "@forestprotocols/sdk";
+import { DeploymentStatus } from "@forest-protocols/sdk";
 
 export const resourcesTable = pgTable("resources", {
   id: integer("id").primaryKey().generatedByDefaultAsIdentity(),

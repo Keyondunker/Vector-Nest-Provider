@@ -1,6 +1,6 @@
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { config } from "@/config";
-import { generateCID, NotInitialized } from "@forestprotocols/sdk";
+import { generateCID, NotInitialized } from "@forest-protocols/sdk";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { NotFound } from "@/errors/NotFound";
 import * as schema from "./schema";

@@ -4,7 +4,7 @@ import {
   AgreementStatus,
   ForestProtocolMarketplaceABI,
   getForestContractAddress,
-} from "@forestprotocols/sdk";
+} from "@forest-protocols/sdk";
 import { Provider } from "./provider";
 import { config } from "./config";
 import { parseEventLogs } from "viem";

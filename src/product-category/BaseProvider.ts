@@ -1,5 +1,5 @@
 import { BaseResourceDetails } from "./details";
-import { Agreement, PipeMethod, PipeResponseCode } from "@forestprotocols/sdk";
+import { Agreement, PipeMethod, PipeResponseCode } from "@forest-protocols/sdk";
 import { AbstractProvider } from "@/abstract/AbstractProvider";
 import { marketplace } from "@/clients";
 

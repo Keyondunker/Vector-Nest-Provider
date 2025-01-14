@@ -1,6 +1,6 @@
 import { createPublicClient, http } from "viem";
 import { config } from "./config";
-import { Marketplace } from "@forestprotocols/sdk";
+import { Marketplace } from "@forest-protocols/sdk";
 import { privateKeyToAccount } from "viem/accounts";
 
 export const rpcClient = createPublicClient({
