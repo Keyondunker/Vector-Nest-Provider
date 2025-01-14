@@ -146,45 +146,6 @@ export class LocalStorage {
   }
 
   /**
-   * Calculates CID of the provider details
-   * @param tx DB client, can be a TX or client itself.
-   */
-  private async updateProviderDetailsCID(tx: DatabaseClientType) {
-    const [results] = await tx
-      .select({
-        details: sql<{
-          [key: string]: string;
-        }>`jsonb_object_agg(${schema.providerDetailsTable.name}, ${schema.providerDetailsTable.value})`,
-      })
-      .from(schema.providerDetailsTable);
-
-    const details = results?.details || {};
-    const cidExists = details.cid !== undefined;
-
-    // CID itself also stored as a detail but not included in the calculation
-    if (cidExists) {
-      delete details.cid;
-    }
-
-    details.cid = (await generateCID(details)).toString();
-
-    // Save calculated CID to the database
-    if (cidExists) {
-      await tx
-        .update(schema.providerDetailsTable)
-        .set({ value: details.cid })
-        .where(eq(schema.providerDetailsTable.name, "cid"));
-    } else {
-      await tx.insert(schema.providerDetailsTable).values({
-        name: "cid",
-        value: details.cid,
-      });
-    }
-
-    return details;
-  }
-
-  /**
    * Returns the latest processed block height.
    */
   async getLatestProcessedBlockHeight(): Promise<bigint | undefined> {
@@ -241,6 +202,45 @@ export class LocalStorage {
           .where(eq(schema.blockchainTxsTable.height, blockHeight));
       }
     });
+  }
+
+  /**
+   * Calculates CID of the provider details
+   * @param tx DB client, can be a TX or client itself.
+   */
+  private async updateProviderDetailsCID(tx: DatabaseClientType) {
+    const [results] = await tx
+      .select({
+        details: sql<{
+          [key: string]: string;
+        }>`jsonb_object_agg(${schema.providerDetailsTable.name}, ${schema.providerDetailsTable.value})`,
+      })
+      .from(schema.providerDetailsTable);
+
+    const details = results?.details || {};
+    const cidExists = details.cid !== undefined;
+
+    // CID itself also stored as a detail but not included in the calculation
+    if (cidExists) {
+      delete details.cid;
+    }
+
+    details.cid = (await generateCID(details)).toString();
+
+    // Save calculated CID to the database
+    if (cidExists) {
+      await tx
+        .update(schema.providerDetailsTable)
+        .set({ value: details.cid })
+        .where(eq(schema.providerDetailsTable.name, "cid"));
+    } else {
+      await tx.insert(schema.providerDetailsTable).values({
+        name: "cid",
+        value: details.cid,
+      });
+    }
+
+    return details;
   }
 
   private checkClient() {
