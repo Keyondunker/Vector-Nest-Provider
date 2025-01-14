@@ -37,11 +37,17 @@ export class LocalStorage {
     });
   }
 
+  /**
+   * Creates a new resource record.
+   */
   async createResource(values: schema.DbResourceInsert) {
     this.checkClient();
     await this.client!.insert(schema.resourcesTable).values(values);
   }
 
+  /**
+   * Updates an existing resource record with the given values.
+   */
   async updateResource(id: number, values: Partial<schema.DbResourceSelect>) {
     this.checkClient();
     await this.client!.update(schema.resourcesTable)
@@ -49,6 +55,9 @@ export class LocalStorage {
       .where(eq(schema.resourcesTable.id, id));
   }
 
+  /**
+   * Marks a resource record as deleted (not active) and deletes its details.
+   */
   async deleteResource(id: number) {
     await this.updateResource(id, {
       isActive: false,
