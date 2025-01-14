@@ -1,22 +1,20 @@
 import { BaseProvider } from "@/product-category/BaseProvider";
 import { BaseResourceDetails } from "@/product-category/details";
-import { Agreement, XMTPPipe } from "@forestprotocols/sdk";
+import { Agreement } from "@forestprotocols/sdk";
 
 /**
  * The main class that implements provider specific actions.
+ * @responsible Provider
  */
 export class Provider extends BaseProvider {
   /**
-   * Implement the below methods according to your custom logics
-   * @responsible Provider
+   * Implement the below methods according to your custom
+   * logics and base provider definition.
    */
-  async generateAuthentication(
-    agreement: Agreement
-  ): Promise<BaseResourceDetails> {
-    throw new Error("Method not implemented.");
-  }
-
-  async resetCredentials(agreement: Agreement): Promise<any> {
+  async resetCredentials(
+    agreement: Agreement,
+    requester: string
+  ): Promise<any> {
     throw new Error("Method not implemented.");
   }
 
