@@ -1,12 +1,12 @@
 import { BaseResourceDetails } from "./details";
 import {
-  AbstractProvider,
   Agreement,
   Marketplace,
   PipeMethod,
   PipeResponseCode,
 } from "@forestprotocols/sdk";
 import { config } from "@/config";
+import { AbstractProvider } from "@/abstract/AbstractProvider";
 
 /**
  * Base provider that defines what kind of actions needs to be implemented for the product category.
@@ -28,6 +28,8 @@ export abstract class BaseProvider extends AbstractProvider<BaseResourceDetails>
   abstract resetCredentials(agreement: Agreement): Promise<any>;
 
   async init() {
+    await super.init();
+
     /**
      * If the product has some interactions, product category owner has to define
      * which "paths" will be responsible for those interactions and what kind of

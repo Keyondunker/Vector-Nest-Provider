@@ -1,29 +1,52 @@
+import { config } from "@/config";
 import { LocalStorage } from "@/database/LocalStorage";
 import { ResourceDetails } from "@/types";
-import { AbstractPipe, Agreement, PipeMethod } from "@forestprotocols/sdk";
+import {
+  Agreement,
+  PipeMethod,
+  PipeResponseCode,
+  XMTPPipe,
+} from "@forestprotocols/sdk";
+import { Address } from "viem";
 
 /**
  * Abstract provider that needs to be extended by the Product Category Owner.
  * @responsible Admin
  */
 export abstract class AbstractProvider<T extends ResourceDetails> {
-  constructor() {
-    if (this.init === AbstractProvider.prototype.init) {
-      throw new Error(
-        "super.init() must be called at the end of the init() method"
-      );
-    }
-  }
-
   /**
    * Communication pipe to let users to interact with their resources.
    */
-  abstract pipe: AbstractPipe;
+  pipe = new XMTPPipe(config.OPERATOR_WALLET_PRIVATE_KEY as Address);
 
   /**
    * Initializes the provider if it needs some async operation to be done before start to use it.
    */
-  abstract init(): Promise<void> | void;
+  async init(): Promise<void> {
+    // Init pipe
+    await this.pipe.init({
+      chain: config.CHAIN,
+      rpcHost: config.RPC_HOST,
+      env: "dev",
+    });
+
+    // A shorthand for global local storage
+    const localStorage = LocalStorage.instance;
+
+    /**
+     * Setup pipe routes to retrieve data from provider
+     */
+
+    // Retrieve details about provider itself
+    this.pipe.route(PipeMethod.GET, "/details", async (req) => {
+      const details = await localStorage.getProviderDetails();
+
+      return {
+        code: PipeResponseCode.OK,
+        body: details,
+      };
+    });
+  }
 
   /**
    * Creates the actual resource based
