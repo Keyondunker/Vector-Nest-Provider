@@ -23,12 +23,15 @@ class Program {
     chain: config.CHAIN,
     transport: http(`http://${config.RPC_HOST}`),
   });
-  marketplace = Marketplace.createWithClient(this.rpcClient);
+  providerAccount = privateKeyToAccount(
+    config.PROVIDER_WALLET_PRIVATE_KEY as `0x${string}`
+  );
+  marketplace = Marketplace.createWithClient(
+    this.rpcClient,
+    this.providerAccount
+  );
   provider = new Provider();
   contractAddress = getForestContractAddress(config.CHAIN);
-  providerWalletAddress = privateKeyToAccount(
-    config.PROVIDER_WALLET_PRIVATE_KEY as `0x${string}`
-  )?.address;
 
   constructor() {}
 
@@ -117,7 +120,7 @@ class Program {
         for (const event of events) {
           if (
             event.eventName === "AgreementCreated" &&
-            event.args.providerOwnerAddr == this.providerWalletAddress
+            event.args.providerOwnerAddr == this.providerAccount.address
           ) {
             const agreement = await this.marketplace.getAgreement(
               Number(event.args.id)
@@ -129,7 +132,7 @@ class Program {
             );
           } else if (
             event.eventName === "AgreementClosed" &&
-            event.args.providerOwnerAddr == this.providerWalletAddress
+            event.args.providerOwnerAddr == this.providerAccount.address
           ) {
             const agreement = await this.marketplace.getAgreement(
               Number(event.args.id)
@@ -152,6 +155,38 @@ class Program {
   async init() {
     logger.info("Initializing database connection");
     await this.localStorage.init();
+
+    // Check agreement balances at startup then in every minute
+    this.checkAgreementBalances();
+    setInterval(() => this.checkAgreementBalances(), 60 * 1000);
+  }
+
+  async checkAgreementBalances() {
+    logger.info("Checking balances of the agreements", { context: "Checker" });
+    const agreements = await this.marketplace.getAllProviderAgreements(
+      this.providerAccount.address,
+      { status: AgreementStatus.Active }
+    );
+    const closingRequests: Promise<any>[] = [];
+
+    for (const agreement of agreements) {
+      const balance = await this.marketplace.getAgreementBalance(agreement.id);
+
+      // If balance of the agreement is ran out of,
+      if (balance <= 0n) {
+        // Queue closeAgreement call to the promise list.
+        closingRequests.push(
+          this.marketplace.closeAgreement(agreement.id).catch((err) => {
+            logger.error(
+              `Error thrown while trying to force close agreement #${agreement.id}: ${err.stack}`
+            );
+          })
+        );
+      }
+    }
+
+    // Wait until all of the closeAgreement calls (if there are) are finished
+    await Promise.all(closingRequests);
   }
 
   async findStartBlock() {
