@@ -79,3 +79,9 @@ export const blockchainTxsTable = pgTable(
     }),
   ]
 );
+
+export const providerDetailsTable = pgTable("provider_details", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  name: varchar({ length: 20 }).notNull(),
+  value: varchar({ length: 200 }).notNull(),
+});

@@ -1,17 +1,23 @@
 {
-  "id": "8b1c30cd-3b6d-45a9-8a62-607fd22a7a82",
+  "id": "2898d7c1-baa8-49d9-969d-6123a4937bda",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.blockchain": {
-      "name": "blockchain",
+    "public.blockchain_transactions": {
+      "name": "blockchain_transactions",
       "schema": "",
       "columns": {
         "height": {
           "name": "height",
-          "type": "integer",
-          "primaryKey": true,
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hash": {
+          "name": "hash",
+          "type": "varchar(70)",
+          "primaryKey": false,
           "notNull": true
         },
         "is_processed": {
@@ -23,7 +29,15 @@
       },
       "indexes": {},
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "blockchain_transactions_height_hash_pk": {
+          "name": "blockchain_transactions_height_hash_pk",
+          "columns": [
+            "height",
+            "hash"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -135,6 +149,48 @@
         "name": {
           "name": "name",
           "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.provider_details": {
+      "name": "provider_details",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "byDefault",
+            "name": "provider_details_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "varchar(200)",
           "primaryKey": false,
           "notNull": true
         }

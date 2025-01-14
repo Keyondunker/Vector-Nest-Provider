@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1736595238215,
-      "tag": "0000_ambiguous_tombstone",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1736706585369,
-      "tag": "0001_neat_black_tarantula",
+      "when": 1736837894477,
+      "tag": "0000_jittery_starfox",
       "breakpoints": true
     }
   ]
