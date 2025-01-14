@@ -5,7 +5,7 @@ import {
   Marketplace,
   PipeMethod,
   PipeResponseCode,
-} from "forestprotocol";
+} from "@forestprotocols/sdk";
 import { config } from "@/config";
 
 /**

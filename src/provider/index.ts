@@ -1,7 +1,7 @@
 import { config } from "@/config";
 import { BaseProvider } from "@/product-category/BaseProvider";
 import { BaseResourceDetails } from "@/product-category/details";
-import { Agreement, XMTPPipe } from "forestprotocol";
+import { Agreement, XMTPPipe } from "@forestprotocols/sdk";
 import { Address } from "viem";
 
 /**
@@ -47,10 +47,6 @@ export class Provider extends BaseProvider {
   }
 
   async delete(agreement: Agreement): Promise<BaseResourceDetails> {
-    throw new Error("Method not implemented.");
-  }
-
-  async checkBalance(agreement: Agreement): Promise<BaseResourceDetails> {
     throw new Error("Method not implemented.");
   }
 }

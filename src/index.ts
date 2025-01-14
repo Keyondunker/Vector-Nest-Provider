@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import {
   Agreement,
+  AgreementStatus,
   ForestProtocolMarketplaceABI,
   getForestContractAddress,
   Marketplace,
-} from "forestprotocol";
+} from "@forestprotocols/sdk";
 import { Provider } from "./provider";
 import { config } from "./config";
 import { createPublicClient, http, parseEventLogs } from "viem";

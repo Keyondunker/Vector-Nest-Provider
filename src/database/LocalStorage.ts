@@ -1,7 +1,7 @@
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "./schema";
 import { config } from "@/config";
-import { NotInitialized } from "forestprotocol";
+import { NotInitialized } from "@forestprotocols/sdk";
 import { and, desc, eq } from "drizzle-orm";
 import pg from "pg";
 
@@ -43,6 +43,11 @@ export class LocalStorage {
     return lastBlock?.height;
   }
 
+  /**
+   * Retrieves a transaction from the database.
+   * @param blockHeight
+   * @param hash
+   */
   async getTransaction(blockHeight: bigint, hash: string) {
     this.checkClient();
     const [tx] = await this.client!.select()
