@@ -4,32 +4,20 @@ import {
   AgreementStatus,
   ForestProtocolMarketplaceABI,
   getForestContractAddress,
-  Marketplace,
 } from "@forestprotocols/sdk";
 import { Provider } from "./provider";
 import { config } from "./config";
-import { createPublicClient, http, parseEventLogs } from "viem";
+import { parseEventLogs } from "viem";
 import { LocalStorage } from "./database/LocalStorage";
 import { logger } from "./logger";
-import { privateKeyToAccount } from "viem/accounts";
 import * as ansis from "ansis";
+import { marketplace, providerAccount, rpcClient } from "./clients";
 
 async function sleep(ms: number) {
   return await new Promise((res) => setTimeout(res, ms));
 }
 
 class Program {
-  rpcClient = createPublicClient({
-    chain: config.CHAIN,
-    transport: http(`http://${config.RPC_HOST}`),
-  });
-  providerAccount = privateKeyToAccount(
-    config.PROVIDER_WALLET_PRIVATE_KEY as `0x${string}`
-  );
-  marketplace = Marketplace.createWithClient(
-    this.rpcClient,
-    this.providerAccount
-  );
   provider = new Provider();
   contractAddress = getForestContractAddress(config.CHAIN);
 
@@ -61,7 +49,7 @@ class Program {
     await this.provider.init();
 
     logger.info(
-      `Provider address: ${ansis.yellow.bold(this.providerAccount.address)}`
+      `Provider address: ${ansis.yellow.bold(providerAccount.address)}`
     );
     logger.info("Started to listening blockchain events");
     let currentBlockNumber = await this.findStartBlock();
@@ -94,7 +82,7 @@ class Program {
           continue;
         }
 
-        const receipt = await this.rpcClient.getTransactionReceipt({
+        const receipt = await rpcClient.getTransactionReceipt({
           hash: tx.hash,
         });
 
@@ -123,9 +111,9 @@ class Program {
         for (const event of events) {
           if (
             event.eventName === "AgreementCreated" &&
-            event.args.providerOwnerAddr == this.providerAccount.address
+            event.args.providerOwnerAddr == providerAccount.address
           ) {
-            const agreement = await this.marketplace.getAgreement(
+            const agreement = await marketplace.getAgreement(
               Number(event.args.id)
             );
             await this.processAgreementCreated(agreement);
@@ -135,9 +123,9 @@ class Program {
             );
           } else if (
             event.eventName === "AgreementClosed" &&
-            event.args.providerOwnerAddr == this.providerAccount.address
+            event.args.providerOwnerAddr == providerAccount.address
           ) {
-            const agreement = await this.marketplace.getAgreement(
+            const agreement = await marketplace.getAgreement(
               Number(event.args.id)
             );
             await this.processAgreementClosed(agreement);
@@ -166,20 +154,23 @@ class Program {
 
   async checkAgreementBalances() {
     logger.info("Checking balances of the agreements", { context: "Checker" });
-    const agreements = await this.marketplace.getAllProviderAgreements(
-      this.providerAccount.address,
+    const agreements = await marketplace.getAllProviderAgreements(
+      providerAccount.address,
       { status: AgreementStatus.Active }
     );
     const closingRequests: Promise<any>[] = [];
 
     for (const agreement of agreements) {
-      const balance = await this.marketplace.getAgreementBalance(agreement.id);
+      const balance = await marketplace.getAgreementBalance(agreement.id);
 
       // If balance of the agreement is ran out of,
       if (balance <= 0n) {
+        logger.warning(
+          `User ${agreement.ownerAddress} has ran out of balance for agreement #${agreement.id}`
+        );
         // Queue closeAgreement call to the promise list.
         closingRequests.push(
-          this.marketplace.closeAgreement(agreement.id).catch((err) => {
+          marketplace.closeAgreement(agreement.id).catch((err) => {
             logger.error(
               `Error thrown while trying to force close agreement #${agreement.id}: ${err.stack}`
             );
@@ -198,12 +189,12 @@ class Program {
 
     // TODO: Find the registration TX of the provider and start from there
 
-    return latestProcessedBlock || (await this.rpcClient.getBlockNumber());
+    return latestProcessedBlock || (await rpcClient.getBlockNumber());
   }
 
   async getBlock(num: bigint) {
     try {
-      return await this.rpcClient.getBlock({
+      return await rpcClient.getBlock({
         blockNumber: num,
         includeTransactions: true,
       });
