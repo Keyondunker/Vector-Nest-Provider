@@ -31,7 +31,8 @@ class Program {
 
   async processAgreementCreated(agreement: Agreement) {
     try {
-      const details = await this.provider.create(agreement);
+      const offer = await this.localStorage.getOffer(agreement.offerId);
+      const details = await this.provider.create(agreement, offer);
       await this.localStorage.createResource({
         id: agreement.id,
         deploymentStatus: details.status,
@@ -63,7 +64,11 @@ class Program {
 
   async processAgreementClosed(agreement: Agreement) {
     try {
-      await this.provider.delete(agreement);
+      const resource = await this.localStorage.getResource(
+        agreement.id,
+        agreement.ownerAddress
+      );
+      await this.provider.delete(agreement, resource);
     } catch (err: any) {
       logger.error(`Error while deleting the resource: ${err.stack}`);
     }

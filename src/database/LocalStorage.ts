@@ -7,9 +7,9 @@ import {
 } from "@forest-protocols/sdk";
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { NotFound } from "@/errors/NotFound";
+import { OfferParameterType } from "@/constants";
 import * as schema from "./schema";
 import pg from "pg";
-import { OfferParameterType } from "@/constants";
 
 export type DatabaseClientType = NodePgDatabase<typeof schema>;
 
@@ -93,7 +93,7 @@ export class LocalStorage {
    * Retrieves an offer details from the database.
    * @param id
    */
-  async getOffer(id: number) {
+  async getOffer(id: number): Promise<schema.DbOffer> {
     const [offer] = await this.offerQuery().where(
       eq(schema.offersTable.id, id)
     );
@@ -102,14 +102,16 @@ export class LocalStorage {
       throw new NotFound("Offer");
     }
 
-    return offer;
+    // This casting is needed because of the fullJoin drizzle
+    // defines typeof of the always available fields as optional
+    return offer as schema.DbOffer;
   }
 
   /**
    * Retrieves all of the offers that this provider have
    */
-  async getOffers() {
-    return await this.offerQuery();
+  async getOffers(): Promise<schema.DbOffer[]> {
+    return (await this.offerQuery()) as schema.DbOffer[];
   }
 
   /**

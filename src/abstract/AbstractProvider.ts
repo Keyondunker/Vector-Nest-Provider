@@ -1,5 +1,6 @@
 import { config } from "@/config";
 import { LocalStorage } from "@/database/LocalStorage";
+import { DbOffer, DbResourceSelect } from "@/database/schema";
 import { NotFound } from "@/errors/NotFound";
 import { ResourceDetails } from "@/types";
 import {
@@ -100,20 +101,26 @@ export abstract class AbstractProvider<T extends ResourceDetails> {
   }
 
   /**
-   * Creates the actual resource based
+   * Creates the actual resource based. Called based on the blockchain agreement creation event.
    * @param agreement On-chain agreement of the resource
+   * @param offer Offer details stored in the database
    */
-  abstract create(agreement: Agreement): Promise<T>;
+  abstract create(agreement: Agreement, offer: DbOffer): Promise<T>;
 
   /**
    * Fetches/retrieves the details about the resource from the resource itself
    * @param agreement On-chain agreement of the resource
+   * @param resource The details stored inside the database
    */
-  abstract getDetails(agreement: Agreement): Promise<T>;
+  abstract getDetails(
+    agreement: Agreement,
+    resource: DbResourceSelect
+  ): Promise<T>;
 
   /**
-   * Deletes the actual resource based
+   * Deletes the actual resource based. Called based on the blockchain agreement closing event.
    * @param agreement On-chain agreement of the resource
+   * @param resource The details stored inside the database
    */
-  abstract delete(agreement: Agreement): Promise<T>;
+  abstract delete(agreement: Agreement, resource: DbResourceSelect): Promise<T>;
 }
