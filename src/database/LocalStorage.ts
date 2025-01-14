@@ -1,8 +1,9 @@
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
-import * as schema from "./schema";
 import { config } from "@/config";
 import { generateCID, NotInitialized } from "@forestprotocols/sdk";
 import { and, desc, eq, sql } from "drizzle-orm";
+import { NotFound } from "@/errors/NotFound";
+import * as schema from "./schema";
 import pg from "pg";
 
 export type DatabaseClientType = NodePgDatabase<typeof schema>;
@@ -30,6 +31,28 @@ export class LocalStorage {
     this.client = drizzle(pool, {
       schema,
     });
+  }
+
+  /**
+   * Retrieves details of a resource
+   * @param id
+   */
+  async getResource(id: number, ownerAddress: string) {
+    this.checkClient();
+    const [resource] = await this.client!.select()
+      .from(schema.resourcesTable)
+      .where(
+        and(
+          eq(schema.resourcesTable.id, id),
+          eq(schema.resourcesTable.ownerAddress, ownerAddress)
+        )
+      );
+
+    if (!resource) {
+      throw new NotFound("Resource");
+    }
+
+    return resource;
   }
 
   /**
