@@ -2,6 +2,7 @@
 import {
   Agreement,
   AgreementStatus,
+  DeploymentStatus,
   ForestProtocolMarketplaceABI,
   getForestContractAddress,
 } from "@forest-protocols/sdk";
@@ -30,9 +31,33 @@ class Program {
 
   async processAgreementCreated(agreement: Agreement) {
     try {
-      await this.provider.create(agreement);
+      const details = await this.provider.create(agreement);
+      await this.localStorage.createResource({
+        id: agreement.id,
+        deploymentStatus: details.status,
+        name: details.name,
+        offerId: agreement.offerId,
+        ownerAddress: agreement.ownerAddress,
+        details: {
+          ...details,
+          // These are already stored in the other column
+          status: undefined,
+          name: undefined,
+        },
+      });
+      // TODO: If the deployment status is deploying, start an async function to keep track of the deployment
     } catch (err: any) {
-      logger.error(err.stack);
+      logger.error(`Error while creating the resource: ${err.stack}`);
+
+      // Save that resource as a failed deployment
+      await this.localStorage.createResource({
+        id: agreement.id,
+        deploymentStatus: DeploymentStatus.Failed,
+        name: "",
+        offerId: agreement.offerId,
+        ownerAddress: agreement.ownerAddress,
+        details: {},
+      });
     }
   }
 
@@ -40,8 +65,10 @@ class Program {
     try {
       await this.provider.delete(agreement);
     } catch (err: any) {
-      logger.error(err.stack);
+      logger.error(`Error while deleting the resource: ${err.stack}`);
     }
+
+    await this.localStorage.deleteResource(agreement.id);
   }
 
   async main() {

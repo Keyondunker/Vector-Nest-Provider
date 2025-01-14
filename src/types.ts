@@ -5,5 +5,6 @@ import { DeploymentStatus } from "@forest-protocols/sdk";
  */
 export type ResourceDetails = {
   status: DeploymentStatus;
+  name: string;
   [key: string]: any;
 };
