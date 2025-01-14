@@ -37,6 +37,18 @@ export abstract class AbstractProvider<T extends ResourceDetails> {
     // Setup pipe standard pipe routes
 
     /**
+     * Retrieve all of the offers that made by the provider.
+     * method: GET
+     * path: /offers
+     */
+    this.pipe.route(PipeMethod.GET, "/offers", async (req) => {
+      return {
+        code: PipeResponseCode.OK,
+        body: await localStorage.getOffers(),
+      };
+    });
+
+    /**
      * Retrieve details about provider itself.
      * method: GET
      * path: /details

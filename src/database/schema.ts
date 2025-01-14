@@ -89,3 +89,5 @@ export const providerDetailsTable = pgTable("provider_details", {
 
 export type DbResourceInsert = typeof resourcesTable.$inferInsert;
 export type DbResourceSelect = typeof resourcesTable.$inferSelect;
+
+export type DbOfferSelect = typeof offersTable.$inferSelect;

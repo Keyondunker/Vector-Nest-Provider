@@ -5,10 +5,11 @@ import {
   generateCID,
   NotInitialized,
 } from "@forest-protocols/sdk";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { NotFound } from "@/errors/NotFound";
 import * as schema from "./schema";
 import pg from "pg";
+import { OfferParameterType } from "@/constants";
 
 export type DatabaseClientType = NodePgDatabase<typeof schema>;
 
@@ -86,6 +87,29 @@ export class LocalStorage {
     }
 
     return resource;
+  }
+
+  /**
+   * Retrieves an offer details from the database.
+   * @param id
+   */
+  async getOffer(id: number) {
+    const [offer] = await this.offerQuery().where(
+      eq(schema.offersTable.id, id)
+    );
+
+    if (!offer) {
+      throw new NotFound("Offer");
+    }
+
+    return offer;
+  }
+
+  /**
+   * Retrieves all of the offers that this provider have
+   */
+  async getOffers() {
+    return await this.offerQuery();
   }
 
   /**
@@ -202,6 +226,44 @@ export class LocalStorage {
           .where(eq(schema.blockchainTxsTable.height, blockHeight));
       }
     });
+  }
+
+  /**
+   * Generates a base "offer" query
+   * @returns Dynamic query
+   */
+  private offerQuery() {
+    this.checkClient();
+    return this.client!.select({
+      id: schema.offersTable.id,
+      name: schema.offersTable.name,
+      deploymentParams: schema.offersTable.deploymentParams,
+      cid: schema.offersTable.cid,
+      parameters: sql<
+        {
+          name: string;
+          value: string;
+          type: OfferParameterType;
+        }[]
+      >`
+      COALESCE(
+        jsonb_agg(
+          DISTINCT jsonb_build_object(
+            'name', ${schema.offerParametersTable.name},
+            'value', ${schema.offerParametersTable.value},
+            'type', ${schema.offerParametersTable.type}
+          )
+        ) FILTER (WHERE ${isNotNull(schema.offerParametersTable.offerId)}),
+        '[]'::jsonb
+      )`,
+    })
+      .from(schema.offersTable)
+      .fullJoin(
+        schema.offerParametersTable,
+        eq(schema.offersTable.id, schema.offerParametersTable.offerId)
+      )
+      .groupBy(schema.offersTable.id)
+      .$dynamic();
   }
 
   /**
