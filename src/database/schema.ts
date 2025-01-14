@@ -15,7 +15,7 @@ export const resourcesTable = pgTable("resources", {
   id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   name: varchar({ length: 100 }).notNull(),
   ownerAddress: varchar("owner_address", { length: 100 }).notNull(),
-  credentials: json().$type<any>().default({}).notNull(),
+  details: json().$type<any>().default({}).notNull(),
   deploymentStatus: varchar("deployment_status", { length: 20 })
     .notNull()
     .$type<DeploymentStatus>(),
