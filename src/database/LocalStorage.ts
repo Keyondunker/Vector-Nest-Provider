@@ -1,6 +1,10 @@
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { config } from "@/config";
-import { generateCID, NotInitialized } from "@forest-protocols/sdk";
+import {
+  DeploymentStatus,
+  generateCID,
+  NotInitialized,
+} from "@forest-protocols/sdk";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { NotFound } from "@/errors/NotFound";
 import * as schema from "./schema";
@@ -30,6 +34,26 @@ export class LocalStorage {
 
     this.client = drizzle(pool, {
       schema,
+    });
+  }
+
+  async createResource(values: schema.DbResourceInsert) {
+    this.checkClient();
+    await this.client!.insert(schema.resourcesTable).values(values);
+  }
+
+  async updateResource(id: number, values: Partial<schema.DbResourceSelect>) {
+    this.checkClient();
+    await this.client!.update(schema.resourcesTable)
+      .set(values)
+      .where(eq(schema.resourcesTable.id, id));
+  }
+
+  async deleteResource(id: number) {
+    await this.updateResource(id, {
+      isActive: false,
+      deploymentStatus: DeploymentStatus.Closed,
+      details: {}, // TODO: Should we delete all the details (including credentials)?
     });
   }
 
