@@ -2,7 +2,7 @@ import { DbOffer, Resource } from "@/database/schema";
 import {
   ExampleBaseProvider,
   ExampleResourceDetails,
-} from "@/product-category/BaseProvider";
+} from "@/product-category/example/base-provider";
 import { Agreement } from "@forest-protocols/sdk";
 
 /**
