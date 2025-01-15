@@ -9,7 +9,7 @@ import { Agreement } from "@forest-protocols/sdk";
  * The main class that implements provider specific actions.
  * @responsible Provider
  */
-export class Provider extends ExampleBaseProvider {
+export class ExampleProvider extends ExampleBaseProvider {
   /**
    * Implement the below methods according to your custom
    * logics and base provider definition.

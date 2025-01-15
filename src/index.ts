@@ -5,14 +5,14 @@ import {
   DeploymentStatus,
   ForestProtocolMarketplaceABI,
 } from "@forest-protocols/sdk";
-import { Provider } from "./provider";
 import { config } from "./config";
 import { parseEventLogs } from "viem";
 import { LocalStorage } from "./database/LocalStorage";
 import { logger } from "./logger";
-import * as ansis from "ansis";
 import { rpcClient } from "./clients";
 import { AbstractProvider } from "./abstract/AbstractProvider";
+import { ExampleProvider } from "./product-category/example/providers/example";
+import * as ansis from "ansis";
 
 async function sleep(ms: number) {
   return await new Promise((res) => setTimeout(res, ms));
@@ -30,7 +30,7 @@ function colorKeyword(word: string) {
 
 class Program {
   providers = {
-    main: new Provider(),
+    main: new ExampleProvider(),
   };
 
   constructor() {}
