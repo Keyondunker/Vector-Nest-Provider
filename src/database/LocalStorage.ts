@@ -49,7 +49,7 @@ export class LocalStorage {
   /**
    * Updates an existing resource record with the given values.
    */
-  async updateResource(id: number, values: Partial<schema.DbResourceSelect>) {
+  async updateResource(id: number, values: Partial<schema.Resource>) {
     this.checkClient();
     await this.client!.update(schema.resourcesTable)
       .set(values)

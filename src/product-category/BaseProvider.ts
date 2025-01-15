@@ -2,6 +2,10 @@ import { BaseResourceDetails } from "./details";
 import { Agreement, PipeMethod, PipeResponseCode } from "@forest-protocols/sdk";
 import { AbstractProvider } from "@/abstract/AbstractProvider";
 import { marketplace } from "@/clients";
+import { LocalStorage } from "@/database/LocalStorage";
+import { logger } from "@/logger";
+import { NotFound } from "@/errors/NotFound";
+import { Resource } from "@/database/schema";
 
 /**
  * Base provider that defines what kind of actions needs to be implemented for the product category.
@@ -14,7 +18,7 @@ export abstract class BaseProvider extends AbstractProvider<BaseResourceDetails>
    */
   abstract resetCredentials(
     agreement: Agreement,
-    requester: string
+    resource: Resource
   ): Promise<any>;
 
   async init() {
@@ -25,24 +29,49 @@ export abstract class BaseProvider extends AbstractProvider<BaseResourceDetails>
 
     // NOTE: It would increase the readability if you add structured comments like below:
     /**
-     * Resets the credentials of a resource
+     * Resets the credentials of the database.
      * method: GET
      * path: /reset
      * params:
-     *  id: number -> ID of the resource
+     *  id: number -> ID of the resource.
      */
     this.pipe.route(PipeMethod.GET, "/reset", async (req) => {
-      const agreementId = req.params!.id; // NOTE: Before using the params, be sure they are exists
-      const agreement = await marketplace.getAgreement(agreementId);
-      const newCredentials = await this.resetCredentials(
-        agreement,
-        req.requester
-      );
+      if (!req.params?.id) {
+        return {
+          code: PipeResponseCode.BAD_REQUEST,
+          message: `Missing "id" param`,
+        };
+      }
+
+      try {
+        const agreementId = req.params?.id;
+        const resource = await LocalStorage.instance.getResource(
+          agreementId,
+          req.requester
+        );
+        const agreement = await marketplace.getAgreement(agreementId);
+        const newCredentials = await this.resetCredentials(agreement, resource);
+
+        return {
+          code: PipeResponseCode.OK,
+          body: {
+            credentials: newCredentials,
+          },
+        };
+      } catch (err: any) {
+        if (err instanceof NotFound) {
+          return {
+            code: PipeResponseCode.NOT_FOUND,
+            message: "Resource not found",
+          };
+        }
+        logger.error(err.stack);
+      }
 
       return {
-        code: PipeResponseCode.OK,
+        code: PipeResponseCode.INTERNAL_SERVER_ERROR,
         body: {
-          credentials: newCredentials,
+          message: "Internal server error",
         },
       };
     });

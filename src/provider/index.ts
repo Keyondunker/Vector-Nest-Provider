@@ -1,4 +1,4 @@
-import { DbOffer, DbResourceSelect } from "@/database/schema";
+import { DbOffer, Resource } from "@/database/schema";
 import { BaseProvider } from "@/product-category/BaseProvider";
 import { BaseResourceDetails } from "@/product-category/details";
 import { Agreement } from "@forest-protocols/sdk";
@@ -14,7 +14,7 @@ export class Provider extends BaseProvider {
    */
   async resetCredentials(
     agreement: Agreement,
-    requester: string
+    resource: Resource
   ): Promise<any> {
     throw new Error("Method not implemented.");
   }
@@ -28,14 +28,14 @@ export class Provider extends BaseProvider {
 
   async getDetails(
     agreement: Agreement,
-    resource: DbResourceSelect
+    resource: Resource
   ): Promise<BaseResourceDetails> {
     throw new Error("Method not implemented.");
   }
 
   async delete(
     agreement: Agreement,
-    resource: DbResourceSelect
+    resource: Resource
   ): Promise<BaseResourceDetails> {
     throw new Error("Method not implemented.");
   }
