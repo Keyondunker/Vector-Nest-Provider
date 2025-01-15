@@ -26,12 +26,30 @@ export const resourcesTable = pgTable("resources", {
     .references(() => offersTable.id)
     .notNull(),
   isActive: boolean("is_active").notNull().default(true),
+  providerId: integer("provider_id")
+    .references(() => providersTable.id)
+    .notNull(),
 });
 relations(resourcesTable, ({ one }) => ({
   offer: one(offersTable, {
     fields: [resourcesTable.offerId],
     references: [offersTable.id],
   }),
+  provider: one(providersTable, {
+    fields: [resourcesTable.providerId],
+    references: [providersTable.id],
+  }),
+}));
+
+export const providersTable = pgTable("providers", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  details: json().$type<any>().default({}).notNull(),
+  cid: varchar({ length: 65 }).notNull(),
+  ownerAddress: varchar("owner_address", { length: 65 }).notNull().unique(),
+});
+relations(providersTable, ({ many }) => ({
+  offers: many(offersTable),
+  resources: many(resourcesTable),
 }));
 
 export const offersTable = pgTable("offers", {
@@ -42,10 +60,17 @@ export const offersTable = pgTable("offers", {
     .default({}),
   cid: varchar({ length: 65 }).notNull(),
   name: varchar({ length: 100 }).notNull(),
+  providerId: integer("provider_id")
+    .references(() => providersTable.id)
+    .notNull(),
 });
-relations(offersTable, ({ many }) => ({
+relations(offersTable, ({ one, many }) => ({
   parameters: many(offerParametersTable),
   resources: many(resourcesTable),
+  provider: one(providersTable, {
+    fields: [offersTable.providerId],
+    references: [providersTable.id],
+  }),
 }));
 
 export const offerParametersTable = pgTable("offer_parameters", {
@@ -81,12 +106,6 @@ export const blockchainTxsTable = pgTable(
   ]
 );
 
-export const providerDetailsTable = pgTable("provider_details", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  name: varchar({ length: 20 }).notNull(),
-  value: varchar({ length: 200 }).notNull(),
-});
-
 export type DbResourceInsert = typeof resourcesTable.$inferInsert;
 export type Resource = typeof resourcesTable.$inferSelect;
 
@@ -95,6 +114,7 @@ export type DbOffer = {
   name: string;
   deploymentParams: any;
   cid: string;
+  providerId: number;
   parameters: {
     name: string;
     value: string;

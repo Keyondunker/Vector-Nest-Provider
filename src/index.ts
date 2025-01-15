@@ -4,7 +4,6 @@ import {
   AgreementStatus,
   DeploymentStatus,
   ForestProtocolMarketplaceABI,
-  getForestContractAddress,
 } from "@forest-protocols/sdk";
 import { Provider } from "./provider";
 import { config } from "./config";
@@ -12,15 +11,27 @@ import { parseEventLogs } from "viem";
 import { LocalStorage } from "./database/LocalStorage";
 import { logger } from "./logger";
 import * as ansis from "ansis";
-import { marketplace, providerAccount, rpcClient } from "./clients";
+import { rpcClient } from "./clients";
+import { AbstractProvider } from "./abstract/AbstractProvider";
 
 async function sleep(ms: number) {
   return await new Promise((res) => setTimeout(res, ms));
 }
 
+function colorNumber(num: bigint | number) {
+  return ansis.bold.red(`#${num}`);
+}
+function colorHex(hex: string) {
+  return ansis.bold.yellow(`${hex}`);
+}
+function colorKeyword(word: string) {
+  return ansis.bold.cyan(word);
+}
+
 class Program {
-  provider = new Provider();
-  contractAddress = getForestContractAddress(config.CHAIN);
+  providers = {
+    main: new Provider(),
+  };
 
   constructor() {}
 
@@ -29,16 +40,20 @@ class Program {
     return LocalStorage.instance;
   }
 
-  async processAgreementCreated(agreement: Agreement) {
+  async processAgreementCreated(
+    agreement: Agreement,
+    provider: AbstractProvider
+  ) {
     try {
       const offer = await this.localStorage.getOffer(agreement.offerId);
-      const details = await this.provider.create(agreement, offer);
+      const details = await provider.create(agreement, offer);
       await this.localStorage.createResource({
         id: agreement.id,
         deploymentStatus: details.status,
         name: details.name,
         offerId: agreement.offerId,
         ownerAddress: agreement.ownerAddress,
+        providerId: offer.providerId,
         details: {
           ...details,
           // These are already stored in the other column
@@ -50,25 +65,37 @@ class Program {
     } catch (err: any) {
       logger.error(`Error while creating the resource: ${err.stack}`);
 
-      // Save that resource as a failed deployment
-      await this.localStorage.createResource({
-        id: agreement.id,
-        deploymentStatus: DeploymentStatus.Failed,
-        name: "",
-        offerId: agreement.offerId,
-        ownerAddress: agreement.ownerAddress,
-        details: {},
-      });
+      try {
+        const providerDetails = await this.localStorage.getProvider(
+          provider.account!.address
+        );
+
+        // Save that resource as a failed deployment
+        await this.localStorage.createResource({
+          id: agreement.id,
+          deploymentStatus: DeploymentStatus.Failed,
+          name: "",
+          offerId: agreement.offerId,
+          providerId: providerDetails.id,
+          ownerAddress: agreement.ownerAddress,
+          details: {},
+        });
+      } catch (err: any) {
+        logger.error(`Error while saving the resource as failed: ${err.stack}`);
+      }
     }
   }
 
-  async processAgreementClosed(agreement: Agreement) {
+  async processAgreementClosed(
+    agreement: Agreement,
+    provider: AbstractProvider
+  ) {
     try {
       const resource = await this.localStorage.getResource(
         agreement.id,
         agreement.ownerAddress
       );
-      await this.provider.delete(agreement, resource);
+      await provider.delete(agreement, resource);
     } catch (err: any) {
       logger.error(`Error while deleting the resource: ${err.stack}`);
     }
@@ -76,13 +103,17 @@ class Program {
     await this.localStorage.deleteResource(agreement.id);
   }
 
+  getProviderByAddress(providerOwnerAddress: string) {
+    for (const [_, provider] of Object.entries(this.providers)) {
+      if (provider.account!.address === providerOwnerAddress) {
+        return provider;
+      }
+    }
+  }
+
   async main() {
     await this.init();
-    await this.provider.init();
 
-    logger.info(
-      `Provider address: ${ansis.yellow.bold(providerAccount.address)}`
-    );
     logger.info("Started to listening blockchain events");
     let currentBlockNumber = await this.findStartBlock();
 
@@ -90,16 +121,14 @@ class Program {
       const block = await this.getBlock(currentBlockNumber);
 
       if (!block) {
-        logger.info(
-          `Waiting for block ${this.colorBlockNumber(currentBlockNumber)}...`
-        );
+        logger.info(`Waiting for block ${colorNumber(currentBlockNumber)}...`);
         await this.waitBlock(currentBlockNumber);
         continue;
       }
 
       if (block.transactions.length == 0) {
         logger.info(
-          `No transactions found in block ${this.colorBlockNumber(
+          `No transactions found in block ${colorNumber(
             currentBlockNumber
           )}, skipping...`
         );
@@ -108,9 +137,9 @@ class Program {
         continue;
       }
 
-      logger.info(`Processing block ${this.colorBlockNumber(block.number)}`);
+      logger.info(`Processing block ${colorNumber(block.number)}`);
       for (const tx of block.transactions) {
-        if (tx.to?.toLowerCase() !== this.contractAddress.toLowerCase()) {
+        if (tx.to?.toLowerCase() !== config.contractAddress.toLowerCase()) {
           continue;
         }
 
@@ -119,7 +148,7 @@ class Program {
         });
 
         if (receipt.status == "reverted") {
-          logger.info(`${this.colorTxHash(tx.hash)} is reverted, skipping...`);
+          logger.info(`TX (${colorHex(tx.hash)}) is reverted, skipping...`);
           continue;
         }
 
@@ -130,7 +159,7 @@ class Program {
 
         if (txRecord?.isProcessed) {
           logger.info(
-            `${this.colorTxHash(tx.hash)} is already processed, skipping...`
+            `TX (${colorHex(tx.hash)}) is already processed, skipping...`
           );
           continue;
         }
@@ -142,25 +171,39 @@ class Program {
 
         for (const event of events) {
           if (
-            event.eventName === "AgreementCreated" &&
-            event.args.providerOwnerAddr == providerAccount.address
+            event.eventName == "AgreementCreated" ||
+            event.eventName == "AgreementClosed"
           ) {
-            const agreement = await marketplace.getAgreement(
+            const provider = this.getProviderByAddress(
+              event.args.providerOwnerAddr
+            );
+
+            // If the provider is not available in this daemon,
+            // save TX as processed and skip it.
+            if (!provider) {
+              await this.localStorage.saveTxAsProcessed(
+                event.blockNumber,
+                event.transactionHash
+              );
+              continue;
+            }
+
+            logger.info(
+              `Event ${colorKeyword(
+                event.eventName
+              )} received for provider ${colorHex(provider.account!.address)}`
+            );
+
+            const agreement = await provider.marketplace.getAgreement(
               Number(event.args.id)
             );
-            await this.processAgreementCreated(agreement);
-            await this.localStorage.saveTxAsProcessed(
-              event.blockNumber,
-              event.transactionHash
-            );
-          } else if (
-            event.eventName === "AgreementClosed" &&
-            event.args.providerOwnerAddr == providerAccount.address
-          ) {
-            const agreement = await marketplace.getAgreement(
-              Number(event.args.id)
-            );
-            await this.processAgreementClosed(agreement);
+
+            if (event.eventName == "AgreementCreated") {
+              await this.processAgreementCreated(agreement, provider);
+            } else {
+              await this.processAgreementClosed(agreement, provider);
+            }
+
             await this.localStorage.saveTxAsProcessed(
               event.blockNumber,
               event.transactionHash
@@ -179,6 +222,16 @@ class Program {
     logger.info("Initializing database connection");
     await this.localStorage.init();
 
+    // Initialize providers
+    for (const [tag, provider] of Object.entries(this.providers)) {
+      await provider.init(tag);
+      logger.info(
+        `Provider initialized; tag: ${tag}, address: ${ansis.yellow.bold(
+          provider.account!.address
+        )}`
+      );
+    }
+
     // Check agreement balances at startup then in every minute
     this.checkAgreementBalances();
     setInterval(() => this.checkAgreementBalances(), 60 * 1000);
@@ -186,31 +239,35 @@ class Program {
 
   async checkAgreementBalances() {
     logger.info("Checking balances of the agreements", { context: "Checker" });
-    const agreements = await marketplace.getAllProviderAgreements(
-      providerAccount.address,
-      { status: AgreementStatus.Active }
-    );
     const closingRequests: Promise<any>[] = [];
 
-    for (const agreement of agreements) {
-      const balance = await marketplace.getAgreementBalance(agreement.id);
+    for (const [_, provider] of Object.entries(this.providers)) {
+      const agreements = await provider.marketplace.getAllProviderAgreements(
+        provider.account!.address,
+        { status: AgreementStatus.Active }
+      );
 
-      // If balance of the agreement is ran out of,
-      if (balance <= 0n) {
-        logger.warning(
-          `User ${agreement.ownerAddress} has ran out of balance for agreement #${agreement.id}`
+      for (const agreement of agreements) {
+        const balance = await provider.marketplace.getAgreementBalance(
+          agreement.id
         );
-        // Queue closeAgreement call to the promise list.
-        closingRequests.push(
-          marketplace.closeAgreement(agreement.id).catch((err) => {
-            logger.error(
-              `Error thrown while trying to force close agreement #${agreement.id}: ${err.stack}`
-            );
-          })
-        );
+
+        // If balance of the agreement is ran out of,
+        if (balance <= 0n) {
+          logger.warning(
+            `User ${agreement.ownerAddress} has ran out of balance for agreement #${agreement.id}`
+          );
+          // Queue closeAgreement call to the promise list.
+          closingRequests.push(
+            provider.marketplace.closeAgreement(agreement.id).catch((err) => {
+              logger.error(
+                `Error thrown while trying to force close agreement #${agreement.id}: ${err.stack}`
+              );
+            })
+          );
+        }
       }
     }
-
     // Wait until all of the closeAgreement calls (if there are) are finished
     await Promise.all(closingRequests);
   }
@@ -244,17 +301,11 @@ class Program {
       await sleep(3000);
     }
   }
-
-  colorBlockNumber(num: bigint) {
-    return ansis.bold.red(`#${num}`);
-  }
-  colorTxHash(hash: string) {
-    return ansis.bold.red(`TX (${hash})`);
-  }
 }
 
 const program = new Program();
 program.main();
+
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 interface BigInt {
   /** Convert to BigInt to string form in JSON.stringify */

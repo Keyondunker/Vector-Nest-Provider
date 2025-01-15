@@ -1,0 +1,10 @@
+{
+  "main": {
+    "name": "",
+    "homepage": "N/A",
+    "description": "N/A",
+    "providerWalletPrivateKey": "0x",
+    "billingWalletPrivateKey": "0x",
+    "operatorWalletPrivateKey": "0x"
+  },
+}

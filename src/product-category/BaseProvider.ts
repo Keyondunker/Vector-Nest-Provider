@@ -1,6 +1,5 @@
 import { Agreement, PipeMethod, PipeResponseCode } from "@forest-protocols/sdk";
 import { AbstractProvider } from "@/abstract/AbstractProvider";
-import { marketplace } from "@/clients";
 import { LocalStorage } from "@/database/LocalStorage";
 import { logger } from "@/logger";
 import { NotFound } from "@/errors/NotFound";
@@ -30,8 +29,8 @@ export abstract class ExampleBaseProvider extends AbstractProvider<ExampleResour
     resource: Resource
   ): Promise<any>;
 
-  async init() {
-    await super.init();
+  async init(providerTag: string) {
+    await super.init(providerTag);
 
     // Example product specific pipe routes.
     // Product category owner has to define purpose of the routes.
@@ -44,7 +43,7 @@ export abstract class ExampleBaseProvider extends AbstractProvider<ExampleResour
      * params:
      *  id: number -> ID of the resource.
      */
-    this.pipe.route(PipeMethod.GET, "/reset", async (req) => {
+    this.pipe!.route(PipeMethod.GET, "/reset", async (req) => {
       if (!req.params?.id) {
         return {
           code: PipeResponseCode.BAD_REQUEST,
@@ -58,7 +57,7 @@ export abstract class ExampleBaseProvider extends AbstractProvider<ExampleResour
           agreementId,
           req.requester
         );
-        const agreement = await marketplace.getAgreement(agreementId);
+        const agreement = await this.marketplace.getAgreement(agreementId);
 
         // Call the provider implemented function
         const newCredentials = await this.resetCredentials(agreement, resource);

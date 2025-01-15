@@ -1,30 +1,56 @@
+import { rpcClient } from "@/clients";
 import { config } from "@/config";
 import { LocalStorage } from "@/database/LocalStorage";
 import { DbOffer, Resource } from "@/database/schema";
 import { NotFound } from "@/errors/NotFound";
+import { logger } from "@/logger";
 import { ResourceDetails } from "@/types";
 import {
   Agreement,
+  Marketplace,
   PipeMethod,
   PipeResponseCode,
   XMTPPipe,
 } from "@forest-protocols/sdk";
-import { Address } from "viem";
+import { Account, Address } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 
 /**
  * Abstract provider that needs to be extended by the Product Category Owner.
  * @responsible Admin
  */
-export abstract class AbstractProvider<T extends ResourceDetails> {
+export abstract class AbstractProvider<
+  T extends ResourceDetails = ResourceDetails
+> {
   /**
    * Communication pipe to let users to interact with their resources.
    */
-  pipe = new XMTPPipe(config.OPERATOR_WALLET_PRIVATE_KEY as Address);
+  pipe?: XMTPPipe;
+
+  marketplace: Marketplace = new Marketplace();
+
+  account?: Account;
 
   /**
    * Initializes the provider if it needs some async operation to be done before start to use it.
    */
-  async init(): Promise<void> {
+  async init(providerTag: string): Promise<void> {
+    const providerInfo = config.providers[providerTag];
+
+    if (!providerInfo) {
+      logger.error(
+        `Provider details not found for provider tag "${providerTag}". Please check your providers.json and providers list in src/index.ts`
+      );
+      process.exit(1);
+    }
+
+    this.pipe = new XMTPPipe(providerInfo.operatorWalletPrivateKey as Address);
+
+    this.account = privateKeyToAccount(
+      providerInfo.providerWalletPrivateKey as `0x${string}`
+    );
+    this.marketplace = Marketplace.createWithClient(rpcClient, this.account);
+
     // Initialize pipe
     await this.pipe.init({
       chain: config.CHAIN,
@@ -55,7 +81,9 @@ export abstract class AbstractProvider<T extends ResourceDetails> {
      * path: /details
      */
     this.pipe.route(PipeMethod.GET, "/details", async (req) => {
-      const details = await localStorage.getProviderDetails();
+      const details = await localStorage.getProviderDetails(
+        this.account!.address
+      );
 
       return {
         code: PipeResponseCode.OK,

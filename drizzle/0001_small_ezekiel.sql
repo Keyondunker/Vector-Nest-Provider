@@ -1,1 +1,0 @@
-ALTER TABLE "resources" RENAME COLUMN "credentials" TO "details";
