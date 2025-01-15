@@ -237,6 +237,9 @@ export class LocalStorage {
       .$dynamic();
   }
 
+  /**
+   * Checks if the client is initialized or not
+   */
   private checkClient() {
     if (!this.client) {
       throw new NotInitialized("Local storage client");
