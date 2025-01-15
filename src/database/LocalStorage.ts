@@ -1,10 +1,6 @@
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { config } from "@/config";
-import {
-  DeploymentStatus,
-  generateCID,
-  NotInitialized,
-} from "@forest-protocols/sdk";
+import { DeploymentStatus, NotInitialized } from "@forest-protocols/sdk";
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { NotFound } from "@/errors/NotFound";
 import { OfferParameterType } from "@/constants";
@@ -117,62 +113,22 @@ export class LocalStorage {
   /**
    * Retrieve all of the details about the provider itself
    */
-  async getProviderDetails() {
+  async getProviderDetails(ownerAddress: string) {
     this.checkClient();
-    const [result] = await this.client!.select({
-      details: sql<{
-        [key: string]: string;
-      }>`jsonb_object_agg(${schema.providerDetailsTable.name}, ${schema.providerDetailsTable.value})`,
-    }).from(schema.providerDetailsTable);
+    const [result] = await this.client!.select()
+      .from(schema.providersTable)
+      .where(eq(schema.providersTable.ownerAddress, ownerAddress));
 
     if (!result) {
       return {};
     }
 
-    if (result.details.cid === undefined) {
-      result.details.cid = (await generateCID(result.details)).toString();
-    }
-
+    result.details.cid = result.cid;
     return result.details;
   }
 
   /**
-   * Adds or updates a provider detail
-   * @param name
-   * @param value
-   * @returns
-   */
-  async setProviderDetail(name: string, value: string) {
-    this.checkClient();
-    return await this.client!.transaction(async (tx) => {
-      const [detail] = await tx
-        .select()
-        .from(schema.providerDetailsTable)
-        .where(eq(schema.providerDetailsTable.name, name));
-
-      if (detail) {
-        // Do we really need to update it?
-        if (detail.value != value) {
-          await tx
-            .update(schema.providerDetailsTable)
-            .set({
-              value,
-            })
-            .where(eq(schema.providerDetailsTable.name, name));
-          return await this.updateProviderDetailsCID(tx);
-        }
-      } else {
-        await tx.insert(schema.providerDetailsTable).values({
-          name,
-          value,
-        });
-        return await this.updateProviderDetailsCID(tx);
-      }
-    });
-  }
-
-  /**
-   * Returns the latest processed block height.
+   * Returns the latest processed block height for a provider.
    */
   async getLatestProcessedBlockHeight(): Promise<bigint | undefined> {
     this.checkClient();
@@ -182,6 +138,19 @@ export class LocalStorage {
       .limit(1);
 
     return lastBlock?.height;
+  }
+
+  async getProvider(ownerAddress: string) {
+    this.checkClient();
+    const [provider] = await this.client!.select()
+      .from(schema.providersTable)
+      .where(eq(schema.providersTable.ownerAddress, ownerAddress));
+
+    if (!provider) {
+      throw new NotFound("Provider");
+    }
+
+    return provider;
   }
 
   /**
@@ -266,45 +235,6 @@ export class LocalStorage {
       )
       .groupBy(schema.offersTable.id)
       .$dynamic();
-  }
-
-  /**
-   * Calculates CID of the provider details
-   * @param tx DB client, can be a TX or client itself.
-   */
-  private async updateProviderDetailsCID(tx: DatabaseClientType) {
-    const [results] = await tx
-      .select({
-        details: sql<{
-          [key: string]: string;
-        }>`jsonb_object_agg(${schema.providerDetailsTable.name}, ${schema.providerDetailsTable.value})`,
-      })
-      .from(schema.providerDetailsTable);
-
-    const details = results?.details || {};
-    const cidExists = details.cid !== undefined;
-
-    // CID itself also stored as a detail but not included in the calculation
-    if (cidExists) {
-      delete details.cid;
-    }
-
-    details.cid = (await generateCID(details)).toString();
-
-    // Save calculated CID to the database
-    if (cidExists) {
-      await tx
-        .update(schema.providerDetailsTable)
-        .set({ value: details.cid })
-        .where(eq(schema.providerDetailsTable.name, "cid"));
-    } else {
-      await tx.insert(schema.providerDetailsTable).values({
-        name: "cid",
-        value: details.cid,
-      });
-    }
-
-    return details;
   }
 
   private checkClient() {

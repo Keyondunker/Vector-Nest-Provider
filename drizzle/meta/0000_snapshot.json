@@ -1,5 +1,5 @@
 {
-  "id": "2898d7c1-baa8-49d9-969d-6123a4937bda",
+  "id": "92ca5246-aead-4f62-a440-a0165bb829af",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -151,18 +151,38 @@
           "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "offers_provider_id_providers_id_fk": {
+          "name": "offers_provider_id_providers_id_fk",
+          "tableFrom": "offers",
+          "tableTo": "providers",
+          "columnsFrom": [
+            "provider_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.provider_details": {
-      "name": "provider_details",
+    "public.providers": {
+      "name": "providers",
       "schema": "",
       "columns": {
         "id": {
@@ -172,7 +192,7 @@
           "notNull": true,
           "identity": {
             "type": "byDefault",
-            "name": "provider_details_id_seq",
+            "name": "providers_id_seq",
             "schema": "public",
             "increment": "1",
             "startWith": "1",
@@ -182,15 +202,22 @@
             "cycle": false
           }
         },
-        "name": {
-          "name": "name",
-          "type": "varchar(20)",
+        "details": {
+          "name": "details",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::json"
+        },
+        "cid": {
+          "name": "cid",
+          "type": "varchar(65)",
           "primaryKey": false,
           "notNull": true
         },
-        "value": {
-          "name": "value",
-          "type": "varchar(200)",
+        "owner_address": {
+          "name": "owner_address",
+          "type": "varchar(65)",
           "primaryKey": false,
           "notNull": true
         }
@@ -198,7 +225,15 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "providers_owner_address_unique": {
+          "name": "providers_owner_address_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "owner_address"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -236,8 +271,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "credentials": {
-          "name": "credentials",
+        "details": {
+          "name": "details",
           "type": "json",
           "primaryKey": false,
           "notNull": true,
@@ -261,6 +296,19 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "provider_id": {
+          "name": "provider_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -271,6 +319,19 @@
           "tableTo": "offers",
           "columnsFrom": [
             "offer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "resources_provider_id_providers_id_fk": {
+          "name": "resources_provider_id_providers_id_fk",
+          "tableFrom": "resources",
+          "tableTo": "providers",
+          "columnsFrom": [
+            "provider_id"
           ],
           "columnsTo": [
             "id"

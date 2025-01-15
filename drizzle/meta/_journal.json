@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1736837894477,
-      "tag": "0000_jittery_starfox",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1736847145694,
-      "tag": "0001_small_ezekiel",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1736872320333,
-      "tag": "0002_wide_flatman",
+      "when": 1736953230748,
+      "tag": "0000_lyrical_captain_flint",
       "breakpoints": true
     }
   ]
