@@ -1,13 +1,15 @@
 import { DbOffer, Resource } from "@/database/schema";
-import { BaseProvider } from "@/product-category/BaseProvider";
-import { BaseResourceDetails } from "@/product-category/details";
+import {
+  ExampleBaseProvider,
+  ExampleResourceDetails,
+} from "@/product-category/BaseProvider";
 import { Agreement } from "@forest-protocols/sdk";
 
 /**
  * The main class that implements provider specific actions.
  * @responsible Provider
  */
-export class Provider extends BaseProvider {
+export class Provider extends ExampleBaseProvider {
   /**
    * Implement the below methods according to your custom
    * logics and base provider definition.
@@ -22,21 +24,21 @@ export class Provider extends BaseProvider {
   async create(
     agreement: Agreement,
     offer: DbOffer
-  ): Promise<BaseResourceDetails> {
+  ): Promise<ExampleResourceDetails> {
     throw new Error("Method not implemented.");
   }
 
   async getDetails(
     agreement: Agreement,
     resource: Resource
-  ): Promise<BaseResourceDetails> {
+  ): Promise<ExampleResourceDetails> {
     throw new Error("Method not implemented.");
   }
 
   async delete(
     agreement: Agreement,
     resource: Resource
-  ): Promise<BaseResourceDetails> {
+  ): Promise<ExampleResourceDetails> {
     throw new Error("Method not implemented.");
   }
 }

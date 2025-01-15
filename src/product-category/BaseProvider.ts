@@ -1,4 +1,3 @@
-import { BaseResourceDetails } from "./details";
 import { Agreement, PipeMethod, PipeResponseCode } from "@forest-protocols/sdk";
 import { AbstractProvider } from "@/abstract/AbstractProvider";
 import { marketplace } from "@/clients";
@@ -6,12 +5,22 @@ import { LocalStorage } from "@/database/LocalStorage";
 import { logger } from "@/logger";
 import { NotFound } from "@/errors/NotFound";
 import { Resource } from "@/database/schema";
+import { ResourceDetails } from "@/types";
+
+/**
+ * The details gathered by the provider from the resource source.
+ * @responsible Product Category Owner
+ */
+export interface ExampleResourceDetails extends ResourceDetails {
+  exampleHttpAddress: string;
+  exampleAuthKey: string;
+}
 
 /**
  * Base provider that defines what kind of actions needs to be implemented for the product category.
  * @responsible Product Category Owner
  */
-export abstract class BaseProvider extends AbstractProvider<BaseResourceDetails> {
+export abstract class ExampleBaseProvider extends AbstractProvider<ExampleResourceDetails> {
   /**
    * An example function that all of the providers of this product category need to implement.
    * @param agreement
@@ -50,6 +59,8 @@ export abstract class BaseProvider extends AbstractProvider<BaseResourceDetails>
           req.requester
         );
         const agreement = await marketplace.getAgreement(agreementId);
+
+        // Call the provider implemented function
         const newCredentials = await this.resetCredentials(agreement, resource);
 
         return {
