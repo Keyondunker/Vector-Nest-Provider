@@ -107,7 +107,7 @@ export class LocalStorage {
     );
 
     if (!offer) {
-      throw new NotFound("Offer");
+      throw new NotFound(`Offer ${id}`);
     }
 
     // This casting is needed because of the fullJoin drizzle
@@ -159,7 +159,7 @@ export class LocalStorage {
       .where(eq(schema.providersTable.ownerAddress, ownerAddress));
 
     if (!provider) {
-      throw new NotFound("Provider");
+      throw new NotFound(`Provider ${ownerAddress}`);
     }
 
     return provider;
@@ -219,6 +219,7 @@ export class LocalStorage {
     await this.client!.transaction(async (tx) => {
       for (const [_, info] of Object.entries(config.providers)) {
         logger.info("Providers data synching with the database");
+
         // NOTE: This is where we store the additional data about the provider inside the database
         const details = {
           name: info.name,
