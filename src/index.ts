@@ -11,8 +11,8 @@ import { LocalStorage } from "./database/LocalStorage";
 import { logger } from "./logger";
 import { rpcClient } from "./clients";
 import { AbstractProvider } from "./abstract/AbstractProvider";
-import { ExampleProvider } from "./product-category/example/providers/example";
 import * as ansis from "ansis";
+import { PostgreSQLDatabaseProvider } from "./product-category/provider";
 
 async function sleep(ms: number) {
   return await new Promise((res) => setTimeout(res, ms));
@@ -30,7 +30,7 @@ function colorKeyword(word: string) {
 
 class Program {
   providers = {
-    main: new ExampleProvider(),
+    main: new PostgreSQLDatabaseProvider(),
   };
 
   constructor() {}
