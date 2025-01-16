@@ -266,6 +266,7 @@ export class LocalStorage {
       name: schema.offersTable.name,
       deploymentParams: schema.offersTable.deploymentParams,
       cid: schema.offersTable.cid,
+      providerId: schema.offersTable.providerId,
       parameters: sql<
         {
           name: string;
