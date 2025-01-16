@@ -110,9 +110,22 @@ export abstract class AbstractProvider<
           req.requester
         );
 
+        // Filter fields that starts with underscore.
+        const details: any = {};
+        for (const [name, value] of Object.entries(resource.details)) {
+          if (name.startsWith("_")) {
+            continue;
+          }
+
+          details[name] = value;
+        }
+
         return {
           code: PipeResponseCode.OK,
-          body: resource,
+          body: {
+            ...resource,
+            details, // Override details with the filtered one
+          },
         };
       } catch (err) {
         if (err instanceof NotFound) {
