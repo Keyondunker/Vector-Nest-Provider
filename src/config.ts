@@ -4,6 +4,7 @@ import { anvil, optimism, optimismSepolia } from "viem/chains";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { getForestContractAddress } from "@forest-protocols/sdk";
+import { nonEmptyStringSchema, privateKeySchema } from "./validation/schemas";
 
 function checkErrors(parseResult: z.SafeParseReturnType<any, any>) {
   if (parseResult.error) {
@@ -27,13 +28,8 @@ function checkErrors(parseResult: z.SafeParseReturnType<any, any>) {
   }
 }
 
-const emptyStringSchema = z.string().nonempty("Empty variable");
-const privateKeySchema = emptyStringSchema.startsWith(
-  "0x",
-  "Private key must start with '0x'"
-);
 const environmentSchema = z.object({
-  DATABASE_URL: emptyStringSchema,
+  DATABASE_URL: nonEmptyStringSchema,
   LOG_LEVEL: z.enum(["error", "warning", "info", "debug"]).default("debug"),
   NODE_ENV: z.enum(["dev", "production"]).default("dev"),
   RPC_HOST: z.string().nonempty("Empty variable"),
@@ -43,9 +39,9 @@ const environmentSchema = z.object({
     .transform((value) => ({ anvil, optimism, optimismSepolia }[value])),
 });
 const providerSchema = z.object({
-  name: emptyStringSchema,
-  description: emptyStringSchema,
-  homepage: emptyStringSchema,
+  name: nonEmptyStringSchema,
+  description: nonEmptyStringSchema,
+  homepage: nonEmptyStringSchema,
   providerWalletPrivateKey: privateKeySchema,
   billingWalletPrivateKey: privateKeySchema,
   operatorWalletPrivateKey: privateKeySchema,

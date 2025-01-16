@@ -1,11 +1,21 @@
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { config } from "@/config";
-import { DeploymentStatus, NotInitialized } from "@forest-protocols/sdk";
+import {
+  DeploymentStatus,
+  generateCID,
+  NotInitialized,
+} from "@forest-protocols/sdk";
+import { z } from "zod";
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { NotFound } from "@/errors/NotFound";
 import { OfferParameterType } from "@/constants";
 import * as schema from "./schema";
 import pg from "pg";
+import { Address, privateKeyToAccount } from "viem/accounts";
+import { logger } from "@/logger";
+import { readdirSync, readFileSync } from "fs";
+import { join } from "path";
+import { nonEmptyStringSchema } from "@/validation/schemas";
 
 export type DatabaseClientType = NodePgDatabase<typeof schema>;
 
@@ -32,6 +42,8 @@ export class LocalStorage {
     this.client = drizzle(pool, {
       schema,
     });
+
+    await this.syncProviderData();
   }
 
   /**
@@ -195,6 +207,50 @@ export class LocalStorage {
           .update(schema.blockchainTxsTable)
           .set({ isProcessed: true })
           .where(eq(schema.blockchainTxsTable.height, blockHeight));
+      }
+    });
+  }
+
+  /**
+   * Synchronizes the provider data from .json file to the database
+   */
+  private async syncProviderData() {
+    this.checkClient();
+    await this.client!.transaction(async (tx) => {
+      for (const [_, info] of Object.entries(config.providers)) {
+        logger.info("Providers data synching with the database");
+        // NOTE: This is where we store the additional data about the provider inside the database
+        const details = {
+          name: info.name,
+          description: info.description,
+          homepage: info.homepage,
+        };
+
+        const account = privateKeyToAccount(
+          info.providerWalletPrivateKey as Address
+        );
+        const cid = await generateCID(details);
+
+        const [provider] = await tx
+          .select()
+          .from(schema.providersTable)
+          .where(eq(schema.providersTable.ownerAddress, account.address));
+
+        if (provider) {
+          await tx
+            .update(schema.providersTable)
+            .set({
+              cid: cid.toString(),
+              details,
+            })
+            .where(eq(schema.providersTable.ownerAddress, account.address));
+        } else {
+          await tx.insert(schema.providersTable).values({
+            cid: cid.toString(),
+            details,
+            ownerAddress: account.address,
+          });
+        }
       }
     });
   }

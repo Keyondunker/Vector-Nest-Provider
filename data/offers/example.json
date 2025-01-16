@@ -1,0 +1,21 @@
+{
+  "deploymentParams": {
+    "region": "eu-west-1",
+    "instance-type": "e2-m1"
+  },
+  "name": "Europe Fast Example Product",
+  "resourceParams": [
+    {
+      "name": "RAM",
+      "value": 4
+    },
+    {
+      "name": "CPU",
+      "value": 2
+    },
+    {
+      "name": "Region",
+      "value": "Europe West"
+    }
+  ]
+}
