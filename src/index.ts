@@ -13,6 +13,7 @@ import { rpcClient } from "./clients";
 import { AbstractProvider } from "./abstract/AbstractProvider";
 import { ExampleProvider } from "./product-category/example/providers/example";
 import * as ansis from "ansis";
+import { NotFound } from "./errors/NotFound";
 
 async function sleep(ms: number) {
   return await new Promise((res) => setTimeout(res, ms));
@@ -47,6 +48,7 @@ class Program {
     try {
       const offer = await this.localStorage.getOffer(agreement.offerId);
       const details = await provider.create(agreement, offer);
+
       await this.localStorage.createResource({
         id: agreement.id,
         deploymentStatus: details.status,
@@ -61,10 +63,68 @@ class Program {
           name: undefined,
         },
       });
-      // TODO: If the deployment status is deploying, start an async function to keep track of the deployment
+
+      if (details.status != DeploymentStatus.Running) {
+        logger.info(
+          `Creation request of agreement ${colorNumber(
+            agreement.id
+          )} resource has been created successfully`
+        );
+
+        // Create an interval to keep track of the deployment process
+        const interval = setInterval(async () => {
+          try {
+            const resource = await this.localStorage.getResource(
+              agreement.id,
+              agreement.ownerAddress
+            );
+
+            const resourceDetails = await provider.getDetails(
+              agreement,
+              resource
+            );
+
+            if (resourceDetails.status == DeploymentStatus.Running) {
+              logger.info(
+                `Resource ${colorNumber(agreement.id)} is in running status`
+              );
+
+              // Update the status and gathered details
+              await this.localStorage.updateResource(agreement.id, {
+                deploymentStatus: DeploymentStatus.Running,
+                details: resourceDetails,
+              });
+              clearInterval(interval);
+            }
+          } catch (err: any) {
+            if (err instanceof NotFound) {
+              clearInterval(interval);
+              logger.info(
+                `Resource ${colorNumber(
+                  agreement.id
+                )} is not available anymore, leaving status check`
+              );
+              return;
+            }
+
+            logger.error(
+              `Error while try to retrieve details of the resource ${colorNumber(
+                agreement.id
+              )}: ${err.stack}`
+            );
+          }
+        }, 5000);
+      } else {
+        logger.info(
+          `Resource of agreement ${colorNumber(
+            agreement.id
+          )} has been created successfully`
+        );
+      }
     } catch (err: any) {
       logger.error(`Error while creating the resource: ${err.stack}`);
 
+      // Save the resource as failed
       try {
         const providerDetails = await this.localStorage.getProvider(
           provider.account!.address
@@ -96,6 +156,11 @@ class Program {
         agreement.ownerAddress
       );
       await provider.delete(agreement, resource);
+      logger.info(
+        `Resource of agreement ${colorNumber(
+          agreement.id
+        )} has been deleted successfully`
+      );
     } catch (err: any) {
       logger.error(`Error while deleting the resource: ${err.stack}`);
     }
