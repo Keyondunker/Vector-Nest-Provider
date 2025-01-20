@@ -8,12 +8,14 @@ import { ResourceDetails } from "@/types";
 import {
   Agreement,
   Marketplace,
+  PipeError,
   PipeMethod,
   PipeResponseCode,
   XMTPPipe,
 } from "@forest-protocols/sdk";
 import { Account, Address } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { z } from "zod";
 
 /**
  * Abstract provider that needs to be extended by the Product Category Owner.
@@ -99,44 +101,46 @@ export abstract class AbstractProvider<
      *  id: number -> ID of the resource
      */
     this.pipe.route(PipeMethod.GET, "/resource", async (req) => {
-      try {
-        // NOTE:
-        // Since XMTP has its own authentication layer, we don't need to worry about
-        // if this request really sent by the owner of the resource. So if the sender is
-        // different from owner of the resource, basically the resource won't be found because
-        // we are looking to the local database with an agreement id + requester address pair.
-        const resource = await localStorage.getResource(
-          req.params!.id,
-          req.requester
-        );
+      const paramsSchema = z.object({
+        id: z.number(),
+      });
+      const paramsValidation = paramsSchema.safeParse(req.params);
+      const params = paramsValidation.data!;
 
-        // Filter fields that starts with underscore.
-        const details: any = {};
-        for (const [name, value] of Object.entries(resource.details)) {
-          if (name.startsWith("_")) {
-            continue;
-          }
+      if (paramsValidation.error) {
+        throw new PipeError(PipeResponseCode.BAD_REQUEST, {
+          message: "Validation error",
+          errors: paramsValidation.error.issues,
+        });
+      }
 
-          details[name] = value;
+      // NOTE:
+      // Since XMTP has its own authentication layer, we don't need to worry about
+      // if this request really sent by the owner of the resource. So if the sender is
+      // different from owner of the resource, basically the resource won't be found because
+      // we are looking to the local database with an agreement id + requester address pair.
+      const resource = await localStorage.getResource(params.id, req.requester);
+
+      if (!resource) {
+        throw new NotFound(`Resource ${params.id}`);
+      }
+
+      // Filter fields that starts with underscore.
+      const details: any = {};
+      for (const [name, value] of Object.entries(resource.details)) {
+        if (name.startsWith("_")) {
+          continue;
         }
 
-        return {
-          code: PipeResponseCode.OK,
-          body: {
-            ...resource,
-            details, // Override details with the filtered one
-          },
-        };
-      } catch (err) {
-        if (err instanceof NotFound) {
-          return {
-            code: PipeResponseCode.NOT_FOUND,
-          };
-        }
+        details[name] = value;
       }
 
       return {
-        code: PipeResponseCode.INTERNAL_SERVER_ERROR,
+        code: PipeResponseCode.OK,
+        body: {
+          ...resource,
+          details, // Use filtered details
+        },
       };
     });
   }

@@ -1,5 +1,9 @@
-export class NotFound extends Error {
+import { PipeError, PipeResponseCode } from "@forest-protocols/sdk";
+
+export class NotFound extends PipeError {
   constructor(entity: any) {
-    super(`${entity} not found`);
+    super(PipeResponseCode.NOT_FOUND, {
+      message: `${entity} not found`,
+    });
   }
 }

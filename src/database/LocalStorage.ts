@@ -79,7 +79,10 @@ export class LocalStorage {
    * Retrieves details of a resource
    * @param id
    */
-  async getResource(id: number, ownerAddress: string) {
+  async getResource(
+    id: number,
+    ownerAddress: string
+  ): Promise<schema.Resource | undefined> {
     this.checkClient();
     const [resource] = await this.client!.select()
       .from(schema.resourcesTable)
@@ -89,10 +92,6 @@ export class LocalStorage {
           eq(schema.resourcesTable.ownerAddress, ownerAddress)
         )
       );
-
-    if (!resource) {
-      throw new NotFound("Resource");
-    }
 
     return resource;
   }
