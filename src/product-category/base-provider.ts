@@ -66,34 +66,25 @@ export abstract class BasePostgreSQLDatabaseProvider extends AbstractProvider<Po
         });
       }
 
-      try {
-        const agreementId = req.body.id;
-        const resource = await LocalStorage.instance.getResource(
-          agreementId,
-          req.requester
-        );
+      const agreementId = req.body.id;
+      const resource = await LocalStorage.instance.getResource(
+        agreementId,
+        req.requester
+      );
 
-        if (!resource.isActive) {
-          throw new NotFound("Resource");
-        }
-
-        const agreement = await this.marketplace.getAgreement(agreementId);
-        const newCredentials = await this.resetCredentials(agreement, resource);
-
-        return {
-          code: PipeResponseCode.OK,
-          body: {
-            credentials: newCredentials,
-          },
-        };
-      } catch (err: any) {
-        if (err instanceof NotFound) {
-          return {
-            code: PipeResponseCode.NOT_FOUND,
-            body: { message: "Resource not found" },
-          };
-        }
+      if (!resource || !resource.isActive) {
+        throw new NotFound("Resource");
       }
+
+      const agreement = await this.marketplace.getAgreement(agreementId);
+      const newCredentials = await this.resetCredentials(agreement, resource);
+
+      return {
+        code: PipeResponseCode.OK,
+        body: {
+          credentials: newCredentials,
+        },
+      };
     });
 
     /**
@@ -111,38 +102,25 @@ export abstract class BasePostgreSQLDatabaseProvider extends AbstractProvider<Po
         });
       }
 
-      try {
-        const agreementId = req.body.id;
-        const resource = await LocalStorage.instance.getResource(
-          agreementId,
-          req.requester
-        );
+      const agreementId = req.body.id;
+      const resource = await LocalStorage.instance.getResource(
+        agreementId,
+        req.requester
+      );
 
-        if (!resource.isActive) {
-          throw new NotFound("Resource");
-        }
-
-        const agreement = await this.marketplace.getAgreement(agreementId);
-        const queryData = await this.sqlQuery(
-          agreement,
-          resource,
-          req.body!.sql
-        );
-
-        return {
-          code: PipeResponseCode.OK,
-          body: {
-            results: queryData,
-          },
-        };
-      } catch (err: any) {
-        if (err instanceof NotFound) {
-          return {
-            code: PipeResponseCode.NOT_FOUND,
-            body: { message: "Resource not found" },
-          };
-        }
+      if (!resource || !resource.isActive) {
+        throw new NotFound("Resource");
       }
+
+      const agreement = await this.marketplace.getAgreement(agreementId);
+      const queryData = await this.sqlQuery(agreement, resource, req.body!.sql);
+
+      return {
+        code: PipeResponseCode.OK,
+        body: {
+          results: queryData,
+        },
+      };
     });
   }
 }

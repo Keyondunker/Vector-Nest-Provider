@@ -79,6 +79,16 @@ class Program {
               agreement.ownerAddress
             );
 
+            if (!resource || !resource.isActive) {
+              clearInterval(interval);
+              logger.info(
+                `Resource ${colorNumber(
+                  agreement.id
+                )} is not available anymore, leaving status check`
+              );
+              return;
+            }
+
             const resourceDetails = await provider.getDetails(
               agreement,
               resource
@@ -97,16 +107,6 @@ class Program {
               clearInterval(interval);
             }
           } catch (err: any) {
-            if (err instanceof NotFound) {
-              clearInterval(interval);
-              logger.info(
-                `Resource ${colorNumber(
-                  agreement.id
-                )} is not available anymore, leaving status check`
-              );
-              return;
-            }
-
             logger.error(
               `Error while try to retrieve details of the resource ${colorNumber(
                 agreement.id
@@ -155,12 +155,20 @@ class Program {
         agreement.id,
         agreement.ownerAddress
       );
-      await provider.delete(agreement, resource);
-      logger.info(
-        `Resource of agreement ${colorNumber(
-          agreement.id
-        )} has been deleted successfully`
-      );
+      if (resource) {
+        await provider.delete(agreement, resource);
+        logger.info(
+          `Resource of agreement ${colorNumber(
+            agreement.id
+          )} has been deleted successfully`
+        );
+      } else {
+        logger.warning(
+          `Resource of agreement ${colorNumber(
+            agreement.id
+          )} is not found or not active`
+        );
+      }
     } catch (err: any) {
       logger.error(`Error while deleting the resource: ${err.stack}`);
     }
