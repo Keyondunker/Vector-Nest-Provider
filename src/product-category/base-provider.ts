@@ -62,9 +62,9 @@ const fieldSchema = z.object({
     .optional(),
 });
 
-type Field = z.infer<typeof fieldSchema>;
+export type Field = z.infer<typeof fieldSchema>;
 
-type ConditionValue = z.infer<typeof conditionValueSchema>;
+export type ConditionValue = z.infer<typeof conditionValueSchema>;
 
 /**
  * Base provider that defines what kind of actions needs to be implemented for the product category.
