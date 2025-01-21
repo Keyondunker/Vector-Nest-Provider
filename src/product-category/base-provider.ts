@@ -58,6 +58,7 @@ const fieldSchema = z.object({
       isPrimary: z.boolean().optional(),
       default: z.any().optional(),
       dimension: z.number().optional(),
+      autoIncrement: z.boolean().optional(),
     })
     .optional(),
 });
