@@ -18,6 +18,7 @@ import {
   colors,
   uniqueNamesGenerator,
 } from "unique-names-generator";
+import { VectorDBProvider } from "./product-category/provider";
 
 async function sleep(ms: number) {
   return await new Promise((res) => setTimeout(res, ms));
@@ -35,7 +36,7 @@ function colorKeyword(word: string) {
 
 class Program {
   providers = {
-    main: new MainProviderImplementation(),
+    main: new VectorDBProvider(),
   };
 
   productCategories: string[] = [];
