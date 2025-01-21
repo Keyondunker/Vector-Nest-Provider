@@ -20,9 +20,10 @@
     "dist"
   ],
   "scripts": {
+    "lint": "tsc --noEmit -p .",
     "dev": "dotenvx run -- tsx src/index.ts",
     "start": "dotenvx run -- node dist/index.js",
-    "build": "tsup",
+    "build": "tsc --noEmit -p . && tsup",
     "clean": "rm -rf dist",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
