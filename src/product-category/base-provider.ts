@@ -66,7 +66,14 @@ const fieldSchema = z.object({
 export type Field = z.infer<typeof fieldSchema>;
 export type ConditionValue = z.infer<typeof conditionValueSchema>;
 
-export type MetricType = "l2" | "ip" | "cosine" | "jaccard" | "hamming";
+const metricTypeSchema = z.union([
+  z.literal("l2"),
+  z.literal("ip"),
+  z.literal("cosine"),
+  z.literal("jaccard"),
+  z.literal("hamming"),
+]);
+export type MetricType = z.infer<typeof metricTypeSchema>;
 
 /**
  * Base provider that defines what kind of actions needs to be implemented for the product category.
@@ -259,11 +266,11 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
      *  id: number -> ID of the resource.
      *  collection: string -> Name of the collection.
      *  vectorField: string -> Name of the vector column.
-     *  embeddings: any[] -> Embeddings to be searched
+     *  embeddings: any[] -> Embeddings to be searched.
      *  options?: {
      *    limit?: number -> Total result count.
-     *    [option: string]: any -> Additional options if there is any
-     *  } -> Additional options if there is any (mostly depends on the implementation).
+     *    metricType?: MetricType -> Metric type of the distance calculation.
+     *  } -> Additional options.
      */
     this.pipe!.route(PipeMethod.POST, "/search", async (req) => {
       const bodySchema = z.object({
@@ -274,6 +281,7 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
         options: z
           .object({
             limit: z.number().optional(),
+            metricType: metricTypeSchema.optional(),
           })
           .optional(),
       });
@@ -305,7 +313,7 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
      * body:
      *  id: number -> ID of the resource.
      *  collection: string -> Name of the collection.
-     *  data: { [column: string]: any }[] -> Data to be inserted
+     *  data: { [field: string]: any }[] -> Data to be inserted.
      */
     this.pipe!.route(PipeMethod.POST, "/data", async (req) => {
       const bodySchema = z.object({
@@ -333,7 +341,7 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
      * body:
      *  id: number -> ID of the resource.
      *  collection: string -> Name of the collection.
-     *  conditions: { [key: string]: ConditionValue } -> The records will select based on the conditions
+     *  conditions: { [key: string]: ConditionValue } -> Conditions for selecting the records that is going to be deleted.
      */
     this.pipe!.route(PipeMethod.DELETE, "/data", async (req) => {
       const bodySchema = z.object({
