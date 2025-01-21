@@ -6,107 +6,352 @@ import {
   validateBodyOrParams,
 } from "@forest-protocols/sdk";
 import { AbstractProvider } from "@/abstract/AbstractProvider";
-import { Resource, ResourceDetails } from "@/types";
+import { ResourceDetails } from "@/types";
+import { Resource } from "@/database/schema";
+import { LocalStorage } from "@/database/LocalStorage";
+import { NotFound } from "@/errors/NotFound";
 import { z } from "zod";
-import { Address } from "viem";
 
 /**
  * The details gathered by the provider from the resource source.
  * This is the "details" type of each resource and it is stored in the database.
  * @responsible Product Category Owner
  */
-export type ExampleProductDetails = ResourceDetails & {
-  Example_Detail: number;
-
-  /* A detail provided by the resource but won't be sent when the user requested it */
-  _examplePrivateDetailWontSentToUser: string;
+export type VectorDBDetails = ResourceDetails & {
+  _credentials: any;
 };
+
+const conditionValueSchema = z
+  .string()
+  .or(z.number())
+  .or(z.boolean())
+  .or(
+    z.object({
+      operator: z.enum([
+        "=",
+        ">",
+        "<",
+        ">=",
+        "<=",
+        "!=",
+        "LIKE",
+        "like",
+        "in",
+        "IN",
+      ]),
+      value: z.any(),
+    })
+  );
+
+type ConditionValue = z.infer<typeof conditionValueSchema>;
 
 /**
  * Base provider that defines what kind of actions needs to be implemented for the product category.
  * @responsible Product Category Owner
  */
-export abstract class BaseExampleProductProvider extends AbstractProvider<ExampleProductDetails> {
+export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDetails> {
   /**
-   * An example function that represents product specific action. This
-   * function has to be implemented by all of the providers that wants
-   * to provide this product.
-   *
-   * The definition is up to product category owner. So if some of the
-   * arguments are not needed, they can be deleted. Like `agreement` or
-   * `resource` can be deleted if they are unnecessary for the implementation.
+   * Retrieves the nearest neighbors for the given embeddings.
    * @param agreement On-chain agreement data.
-   * @param resource Resource information stored in the database.
-   * @param additionalArgument Extra argument that related to the functionality (if needed).
+   * @param resource Resource record of the agreement.
+   * @param collection Collection name.
+   * @param vectorField Vector field/column name.
+   * @param embeddings Embeddings to be searched.
+   * @param options Additional options for search process.
    */
-  abstract doSomething(
+  abstract search(
     agreement: Agreement,
     resource: Resource,
-    additionalArgument: string
-  ): Promise<{ stringResult: string; numberResult: number }>;
+    collection: string,
+    vectorField: string,
+    embeddings: any[],
+    options?: {
+      /**
+       * Total result count.
+       */
+      limit?: number;
+      [option: string]: any;
+    }
+  ): Promise<any[]>;
+
+  /**
+   * Insert data into a collection
+   * @param agreement On-chain agreement data.
+   * @param resource Resource record of the agreement
+   * @param collection Collection name.
+   * @param data
+   */
+  abstract insertData(
+    agreement: Agreement,
+    resource: Resource,
+    collection: string,
+    data: { [field: string]: any }[]
+  ): Promise<void>;
+
+  /**
+   * Deletes data from a collection
+   * @param agreement On-chain agreement data.
+   * @param resource Resource record of the agreement
+   * @param collection Collection name.
+   * @param conditions Conditions will be used to filter which records are going to be deleted.
+   */
+  abstract deleteData(
+    agreement: Agreement,
+    resource: Resource,
+    collection: string,
+    conditions: { [field: string]: ConditionValue }
+  ): Promise<void>;
+
+  /**
+   * Creates a new collection.
+   * @param agreement On-chain agreement data.
+   * @param resource Resource record of the agreement.
+   * @param name Name of the collection.
+   * @param fields Columns of the collection.
+   * @param options Additional option for the creation process
+   */
+  abstract createCollection(
+    agreement: Agreement,
+    resource: Resource,
+    name: string,
+    fields: {
+      name: string;
+      type: string;
+      properties?: any;
+    }[],
+    options?: any
+  ): Promise<void>;
+
+  /**
+   * Deletes a collection.
+   * @param agreement On-chain agreement data.
+   * @param resource Resource record of the agreement
+   * @param name Name of the collection
+   */
+  abstract deleteCollection(
+    agreement: Agreement,
+    resource: Resource,
+    name: string
+  ): Promise<void>;
 
   async init(providerTag: string) {
     // Base class' `init` function must be called.
     await super.init(providerTag);
 
     /**
-     * If your product has some functionalities/interactions (like "doSomething" method)
-     * you can define "Pipe" routes to map the incoming requests from end users to the
-     * corresponding methods.
-     *
-     * Pipe is a simple abstraction layer that allow the participants to communicate
-     * HTTP like request-response style communication between them.
-     *
-     * Take a look at the example below:
+     * Validates the request body according to the given Zod schema.
      */
+    const validateBody = <T>(body: any, schema: z.Schema<T>) => {
+      const bodyValidation = schema.safeParse(body);
+      if (bodyValidation.error) {
+        throw new PipeError(PipeResponseCode.BAD_REQUEST, {
+          message: "Validation error",
+          body: bodyValidation.error.issues,
+        });
+      }
 
-    /** Calls "doSomething" method. */
-    this.route(PipeMethod.GET, "/do-something", async (req) => {
-      /**
-       * Validates the params/body of the request. If they are not valid
-       * request will reply back to the user with a validation error message
-       * and bad request code automatically.
-       */
-      const body = validateBodyOrParams(
-        req.body,
-        z.object({
-          /** ID of the resource. */
-          id: z.number(),
+      return bodyValidation.data;
+    };
 
-          /** Product category address that the resource created in. */
-          pc: addressSchema, // A pre-defined Zod schema for smart contract addresses.
-
-          /** Additional argument for the method. */
-          argument: z.string(),
-        })
+    /**
+     * Retrieves resource details from local storage and blockchain
+     * and checks the existence of the resource.
+     */
+    const getResourceDetails = async (
+      agreementId: number,
+      requester: string
+    ) => {
+      const resource = await LocalStorage.instance.getResource(
+        agreementId,
+        requester
       );
 
-      /**
-       * Retrieve the resource from the database.
-       *
-       * IMPORTANT NOTE:
-       * We need to authorize the user (to be sure that he is the actual owner
-       * of the resource) before processing the request. To do this, we can
-       * use `this.getResource`. This method tries to find the resource data
-       * in the database based on the requester and throws proper errors if it cannot.
-       * If the requester is not the owner of the resource, it won't be found.
-       *
-       * So even you don't need to use resource data, you need to call `this.getResource`
-       * to be sure that user is actual owner of the resource.
-       */
-      const { agreement, resource } = await this.getResource(
+      if (!resource || !resource.isActive) {
+        throw new NotFound("Resource");
+      }
+
+      const agreement = await this.marketplace.getAgreement(agreementId);
+
+      return { resource, agreement };
+    };
+
+    /**
+     * Creates a new collection
+     * method: POST
+     * path: /collection
+     * body:
+     *  id: number -> ID of the resource.
+     *  name: string -> Name of the collection.
+     *  fields: Array<{
+     *    name: string,
+     *    type: string,
+     *    properties?: any }> -> Fields/columns of the collection.
+     *  options?: any -> Options of the collection if there is any.
+     */
+    this.pipe!.route(PipeMethod.POST, "/collection", async (req) => {
+      const bodySchema = z.object({
+        id: z.number(),
+        name: z.string(),
+        fields: z.array(
+          z.object({
+            name: z.string(),
+            type: z.string(),
+            properties: z.any().optional(),
+          })
+        ),
+        options: z.any().optional(),
+      });
+      const body = validateBody(req.body, bodySchema);
+      const { resource, agreement } = await getResourceDetails(
         body.id,
-        body.pc as Address,
         req.requester
       );
 
-      // Call the actual method and store the results of it.
-      const result = await this.doSomething(agreement, resource, body.argument);
+      await this.createCollection(
+        agreement,
+        resource,
+        body.name,
+        body.fields,
+        body.options
+      );
+
+      return {
+        code: PipeResponseCode.OK,
+      };
+    });
+
+    /**
+     * Deletes a collection
+     * method: DELETE
+     * path: /collection
+     * body:
+     *  id: number -> ID of the resource.
+     *  name: string -> Name of the collection.
+     */
+    this.pipe!.route(PipeMethod.DELETE, "/collection", async (req) => {
+      const bodySchema = z.object({
+        id: z.number(),
+        name: z.string(),
+      });
+      const body = validateBody(req.body, bodySchema);
+      const { resource, agreement } = await getResourceDetails(
+        body.id,
+        req.requester
+      );
+
+      await this.deleteCollection(agreement, resource, body.name);
+
+      return {
+        code: PipeResponseCode.OK,
+      };
+    });
+
+    /**
+     * Gets the nearest neighbors for the given embeddings.
+     * method: POST
+     * path: /search
+     * body:
+     *  id: number -> ID of the resource.
+     *  collection: string -> Name of the collection.
+     *  vectorField: string -> Name of the vector column.
+     *  embeddings: any[] -> Embeddings to be searched
+     *  options?: {
+     *    limit?: number -> Total result count.
+     *    [option: string]: any -> Additional options if there is any
+     *  } -> Additional options if there is any (mostly depends on the implementation).
+     */
+    this.pipe!.route(PipeMethod.POST, "/search", async (req) => {
+      const bodySchema = z.object({
+        id: z.number(),
+        collection: z.string(),
+        vectorField: z.string(),
+        embeddings: z.array(z.any()).min(1),
+        options: z
+          .object({
+            limit: z.number().optional(),
+          })
+          .optional(),
+      });
+      const body = validateBody(req.body, bodySchema);
+      const { resource, agreement } = await getResourceDetails(
+        body.id,
+        req.requester
+      );
+
+      const result = await this.search(
+        agreement,
+        resource,
+        body.collection,
+        body.vectorField,
+        body.embeddings,
+        body.options
+      );
+
+      return {
+        code: PipeResponseCode.OK,
+        body: result,
+      };
+    });
+
+    /**
+     * Insert data into a collection
+     * method: POST
+     * path: /data
+     * body:
+     *  id: number -> ID of the resource.
+     *  collection: string -> Name of the collection.
+     *  data: { [column: string]: any }[] -> Data to be inserted
+     */
+    this.pipe!.route(PipeMethod.POST, "/data", async (req) => {
+      const bodySchema = z.object({
+        id: z.number(),
+        collection: z.string(),
+        data: z.array(z.record(z.string(), z.any())).min(1),
+      });
+      const body = validateBody(req.body, bodySchema);
+      const { resource, agreement } = await getResourceDetails(
+        body.id,
+        req.requester
+      );
+
+      await this.insertData(agreement, resource, body.collection, body.data);
+
+      return {
+        code: PipeResponseCode.OK,
+      };
+    });
+
+    /**
+     * Delete data from a collection
+     * method: DELETE
+     * path: /data
+     * body:
+     *  id: number -> ID of the resource.
+     *  collection: string -> Name of the collection.
+     *  conditions: { [key: string]: ConditionValue } -> The records will select based on the conditions
+     */
+    this.pipe!.route(PipeMethod.DELETE, "/data", async (req) => {
+      const bodySchema = z.object({
+        id: z.number(),
+        collection: z.string(),
+        conditions: z.record(z.string(), conditionValueSchema),
+      });
+      const body = validateBody(req.body, bodySchema);
+      const { resource, agreement } = await getResourceDetails(
+        body.id,
+        req.requester
+      );
+
+      await this.deleteData(
+        agreement,
+        resource,
+        body.collection,
+        body.conditions
+      );
 
       // Return the response with the results.
       return {
         code: PipeResponseCode.OK,
-        body: result,
       };
     });
   }

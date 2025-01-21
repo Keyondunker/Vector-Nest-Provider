@@ -1,38 +1,84 @@
 import { Agreement } from "@forest-protocols/sdk";
-import {
-  BaseExampleProductProvider,
-  ExampleProductDetails,
-} from "./base-provider";
-import { DbOffer, Resource } from "@/types";
+import { DbOffer, Resource } from "@/database/schema";
+import { BaseVectorDBProvider, VectorDBDetails } from "./base-provider";
 
 /**
  * The main class that implements provider specific actions.
  * @responsible Provider
  */
-export class MainProviderImplementation extends BaseExampleProductProvider {
-  async doSomething(
+export class VectorDBProvider extends BaseVectorDBProvider {
+  async search(
     agreement: Agreement,
     resource: Resource,
-    additionalArgument: string
-  ): Promise<{ stringResult: string; numberResult: number }> {
+    table: string,
+    vectorColumn: string,
+    embeddings: any[],
+    options?: { limit?: number; [option: string]: any }
+  ): Promise<any[]> {
     /**
-     * TODO: Implement the logic to achieve purpose of this function.
+     * TODO: Implement how to make a search in pg_vector.
      */
-
-    // An example;
-
-    // Some important logic....
-
-    return {
-      numberResult: agreement.id,
-      stringResult: `${resource.name}-${additionalArgument}`,
-    };
+    throw new Error("Method not implemented.");
   }
 
-  async create(
+  async insertData(
     agreement: Agreement,
-    offer: DbOffer
-  ): Promise<ExampleProductDetails> {
+    resource: Resource,
+    table: string,
+    data: { [column: string]: any }[]
+  ): Promise<void> {
+    /**
+     * TODO: Implement how to insert data into a table.
+     */
+    throw new Error("Method not implemented.");
+  }
+
+  async deleteData(
+    agreement: Agreement,
+    resource: Resource,
+    table: string,
+    conditions: {
+      [key: string]:
+        | string
+        | number
+        | boolean
+        | {
+            operator: "=" | ">" | "<" | ">=" | "<=" | "!=" | "LIKE" | "IN";
+            value?: any;
+          };
+    }
+  ): Promise<void> {
+    /**
+     * TODO: Implement how to delete data from a table.
+     */
+    throw new Error("Method not implemented.");
+  }
+
+  async createCollection(
+    agreement: Agreement,
+    resource: Resource,
+    name: string,
+    fields: { name: string; type: string; properties?: any }[],
+    options?: any
+  ): Promise<void> {
+    /**
+     * TODO: Implement how to create a collection.
+     */
+    throw new Error("Method not implemented.");
+  }
+
+  async deleteCollection(
+    agreement: Agreement,
+    resource: Resource,
+    name: string
+  ): Promise<void> {
+    /**
+     * TODO: Implement how to delete a collection.
+     */
+    throw new Error("Method not implemented.");
+  }
+
+  async create(agreement: Agreement, offer: DbOffer): Promise<VectorDBDetails> {
     /**
      * TODO: Implement how the resource will be created.
      */
@@ -44,7 +90,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
   async getDetails(
     agreement: Agreement,
     resource: Resource
-  ): Promise<ExampleProductDetails> {
+  ): Promise<VectorDBDetails> {
     /**
      * TODO: Implement how the details retrieved from the resource source.
      */
@@ -57,7 +103,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
   async delete(
     agreement: Agreement,
     resource: Resource
-  ): Promise<ExampleProductDetails> {
+  ): Promise<VectorDBDetails> {
     /**
      * TODO: Implement how the resource will be deleted.
      */
