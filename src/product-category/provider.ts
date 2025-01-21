@@ -1,6 +1,11 @@
 import { Agreement } from "@forest-protocols/sdk";
 import { DbOffer, Resource } from "@/database/schema";
-import { BaseVectorDBProvider, VectorDBDetails } from "./base-provider";
+import {
+  BaseVectorDBProvider,
+  ConditionValue,
+  Field,
+  VectorDBDetails,
+} from "./base-provider";
 
 /**
  * The main class that implements provider specific actions.
@@ -38,14 +43,7 @@ export class VectorDBProvider extends BaseVectorDBProvider {
     resource: Resource,
     table: string,
     conditions: {
-      [key: string]:
-        | string
-        | number
-        | boolean
-        | {
-            operator: "=" | ">" | "<" | ">=" | "<=" | "!=" | "LIKE" | "IN";
-            value?: any;
-          };
+      [key: string]: ConditionValue;
     }
   ): Promise<void> {
     /**
@@ -58,7 +56,7 @@ export class VectorDBProvider extends BaseVectorDBProvider {
     agreement: Agreement,
     resource: Resource,
     name: string,
-    fields: { name: string; type: string; properties?: any }[],
+    fields: Field[],
     options?: any
   ): Promise<void> {
     /**
