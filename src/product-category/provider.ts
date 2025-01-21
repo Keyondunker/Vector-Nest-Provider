@@ -4,6 +4,7 @@ import {
   BaseVectorDBProvider,
   ConditionValue,
   Field,
+  MetricType,
   VectorDBDetails,
 } from "./base-provider";
 
@@ -20,6 +21,7 @@ export class VectorDBProvider extends BaseVectorDBProvider {
     embeddings: any[],
     options?: {
       limit?: number;
+      metricType?: MetricType;
     }
   ): Promise<any[]> {
     /**

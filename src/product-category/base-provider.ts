@@ -64,8 +64,9 @@ const fieldSchema = z.object({
 });
 
 export type Field = z.infer<typeof fieldSchema>;
-
 export type ConditionValue = z.infer<typeof conditionValueSchema>;
+
+export type MetricType = "l2" | "ip" | "cosine" | "jaccard" | "hamming";
 
 /**
  * Base provider that defines what kind of actions needs to be implemented for the product category.
@@ -92,6 +93,11 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
        * Total result count.
        */
       limit?: number;
+
+      /**
+       * Distance metric type.
+       */
+      metricType?: MetricType;
     }
   ): Promise<any[]>;
 
