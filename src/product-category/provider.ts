@@ -13,7 +13,7 @@ export class VectorDBProvider extends BaseVectorDBProvider {
     table: string,
     vectorColumn: string,
     embeddings: any[],
-    options?: { limit?: number; [option: string]: any }
+    options?: { limit?: number }
   ): Promise<any[]> {
     /**
      * TODO: Implement how to make a search in pg_vector.
