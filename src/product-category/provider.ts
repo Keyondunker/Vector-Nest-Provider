@@ -15,13 +15,15 @@ export class VectorDBProvider extends BaseVectorDBProvider {
   async search(
     agreement: Agreement,
     resource: Resource,
-    table: string,
-    vectorColumn: string,
+    collection: string,
+    vectorField: string,
     embeddings: any[],
-    options?: { limit?: number }
+    options?: {
+      limit?: number;
+    }
   ): Promise<any[]> {
     /**
-     * TODO: Implement how to make a search in pg_vector.
+     * TODO: Implement how to retrieve closest embeddings.
      */
     throw new Error("Method not implemented.");
   }
@@ -29,11 +31,11 @@ export class VectorDBProvider extends BaseVectorDBProvider {
   async insertData(
     agreement: Agreement,
     resource: Resource,
-    table: string,
-    data: { [column: string]: any }[]
+    collection: string,
+    data: { [field: string]: any }[]
   ): Promise<void> {
     /**
-     * TODO: Implement how to insert data into a table.
+     * TODO: Implement how to insert data into a collection.
      */
     throw new Error("Method not implemented.");
   }
@@ -41,13 +43,11 @@ export class VectorDBProvider extends BaseVectorDBProvider {
   async deleteData(
     agreement: Agreement,
     resource: Resource,
-    table: string,
-    conditions: {
-      [key: string]: ConditionValue;
-    }
+    collection: string,
+    conditions: { [field: string]: ConditionValue }
   ): Promise<void> {
     /**
-     * TODO: Implement how to delete data from a table.
+     * TODO: Implement how to delete data from a collection.
      */
     throw new Error("Method not implemented.");
   }
@@ -56,8 +56,7 @@ export class VectorDBProvider extends BaseVectorDBProvider {
     agreement: Agreement,
     resource: Resource,
     name: string,
-    fields: Field[],
-    options?: any
+    fields: Field[]
   ): Promise<void> {
     /**
      * TODO: Implement how to create a collection.
