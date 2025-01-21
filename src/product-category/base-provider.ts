@@ -43,6 +43,27 @@ const conditionValueSchema = z
     })
   );
 
+const fieldSchema = z.object({
+  name: z.string().min(1),
+  type: z.enum([
+    "String",
+    "Integer32",
+    "Integer64",
+    "Float",
+    "Vector",
+    "Boolean",
+  ]),
+  properties: z
+    .object({
+      isPrimary: z.boolean().optional(),
+      default: z.any().optional(),
+      dimension: z.number().optional(),
+    })
+    .optional(),
+});
+
+type Field = z.infer<typeof fieldSchema>;
+
 type ConditionValue = z.infer<typeof conditionValueSchema>;
 
 /**
@@ -70,7 +91,6 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
        * Total result count.
        */
       limit?: number;
-      [option: string]: any;
     }
   ): Promise<any[]>;
 
@@ -114,12 +134,7 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
     agreement: Agreement,
     resource: Resource,
     name: string,
-    fields: {
-      name: string;
-      type: string;
-      properties?: any;
-    }[],
-    options?: any
+    fields: Field[]
   ): Promise<void>;
 
   /**
@@ -182,24 +197,13 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
      * body:
      *  id: number -> ID of the resource.
      *  name: string -> Name of the collection.
-     *  fields: Array<{
-     *    name: string,
-     *    type: string,
-     *    properties?: any }> -> Fields/columns of the collection.
-     *  options?: any -> Options of the collection if there is any.
+     *  fields: Array<Field> -> Fields/columns of the collection.
      */
     this.pipe!.route(PipeMethod.POST, "/collection", async (req) => {
       const bodySchema = z.object({
         id: z.number(),
         name: z.string(),
-        fields: z.array(
-          z.object({
-            name: z.string(),
-            type: z.string(),
-            properties: z.any().optional(),
-          })
-        ),
-        options: z.any().optional(),
+        fields: z.array(fieldSchema).min(1),
       });
       const body = validateBody(req.body, bodySchema);
       const { resource, agreement } = await getResourceDetails(
@@ -207,13 +211,7 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
         req.requester
       );
 
-      await this.createCollection(
-        agreement,
-        resource,
-        body.name,
-        body.fields,
-        body.options
-      );
+      await this.createCollection(agreement, resource, body.name, body.fields);
 
       return {
         code: PipeResponseCode.OK,
