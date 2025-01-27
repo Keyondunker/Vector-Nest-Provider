@@ -3,38 +3,48 @@ import { relations } from "drizzle-orm";
 import {
   bigint,
   boolean,
+  foreignKey,
   integer,
   json,
+  jsonb,
   pgTable,
   primaryKey,
   varchar,
 } from "drizzle-orm/pg-core";
 import { DeploymentStatus } from "@forest-protocols/sdk";
 
-export const resourcesTable = pgTable("resources", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  name: varchar({ length: 100 }).notNull(),
-  ownerAddress: varchar("owner_address", { length: 100 }).notNull(),
-  details: json().$type<any>().default({}).notNull(),
-  deploymentStatus: varchar("deployment_status", { length: 20 })
-    .notNull()
-    .$type<DeploymentStatus>(),
-  groupName: varchar("group_name", { length: 100 })
-    .notNull()
-    .default("default"),
-  offerId: integer("offer_id")
-    .references(() => offersTable.id)
-    .notNull(),
-  isActive: boolean("is_active").notNull().default(true),
-  providerId: integer("provider_id")
-    .references(() => providersTable.id)
-    .notNull(),
-});
+export const resourcesTable = pgTable(
+  "resources",
+  {
+    id: integer("id").notNull(),
+    name: varchar({ length: 100 }).notNull(),
+    ownerAddress: varchar("owner_address", { length: 100 }).notNull(),
+    details: json().$type<any>().default({}).notNull(),
+    deploymentStatus: varchar("deployment_status", { length: 20 })
+      .$type<DeploymentStatus>()
+      .notNull(),
+    groupName: varchar("group_name", { length: 100 })
+      .default("default")
+      .notNull(),
+    offerId: integer("offer_id").notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    providerId: integer("provider_id")
+      .references(() => providersTable.id)
+      .notNull(),
+    pcAddressId: integer("pc_address_id").notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.id, table.pcAddressId],
+    }),
+    foreignKey({
+      name: "resources_offers_fk",
+      columns: [table.offerId, table.pcAddressId],
+      foreignColumns: [offersTable.id, offersTable.pcAddressId],
+    }),
+  ]
+);
 relations(resourcesTable, ({ one }) => ({
-  offer: one(offersTable, {
-    fields: [resourcesTable.offerId],
-    references: [offersTable.id],
-  }),
   provider: one(providersTable, {
     fields: [resourcesTable.providerId],
     references: [providersTable.id],
@@ -44,7 +54,6 @@ relations(resourcesTable, ({ one }) => ({
 export const providersTable = pgTable("providers", {
   id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   details: json().$type<any>().default({}).notNull(),
-  cid: varchar({ length: 65 }).notNull(),
   ownerAddress: varchar("owner_address", { length: 65 }).notNull().unique(),
 });
 relations(providersTable, ({ many }) => ({
@@ -52,43 +61,42 @@ relations(providersTable, ({ many }) => ({
   resources: many(resourcesTable),
 }));
 
-export const offersTable = pgTable("offers", {
+export const productCategoriesTable = pgTable("product_categories", {
   id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  deploymentParams: json("deployment_params")
-    .$type<any>()
-    .notNull()
-    .default({}),
-  cid: varchar({ length: 65 }).notNull(),
-  name: varchar({ length: 100 }).notNull(),
-  providerId: integer("provider_id")
-    .references(() => providersTable.id)
-    .notNull(),
+  address: varchar({ length: 100 }).notNull(),
 });
-relations(offersTable, ({ one, many }) => ({
-  parameters: many(offerParametersTable),
+relations(productCategoriesTable, ({ many }) => ({
+  offers: many(offersTable),
   resources: many(resourcesTable),
+}));
+
+export const offersTable = pgTable(
+  "offers",
+  {
+    id: integer("id").notNull(),
+    providerId: integer("provider_id")
+      .references(() => providersTable.id)
+      .notNull(),
+    pcAddressId: integer("pc_address_id")
+      .references(() => productCategoriesTable.id)
+      .notNull(),
+    details: jsonb().$type<any>().notNull(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.id, table.pcAddressId],
+    }),
+  ]
+);
+relations(offersTable, ({ one, many }) => ({
+  resources: many(resourcesTable),
+  productCategory: one(productCategoriesTable, {
+    fields: [offersTable.pcAddressId],
+    references: [productCategoriesTable.id],
+  }),
   provider: one(providersTable, {
     fields: [offersTable.providerId],
     references: [providersTable.id],
-  }),
-}));
-
-export const offerParametersTable = pgTable("offer_parameters", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  name: varchar({ length: 50 }).notNull(),
-  value: varchar({ length: 50 }).notNull(),
-  type: varchar({ length: 10 })
-    .notNull()
-    .$type<OfferParameterType>()
-    .default(OfferParameterType.String),
-  offerId: integer("offer_id")
-    .references(() => offersTable.id)
-    .notNull(),
-});
-relations(offerParametersTable, ({ one }) => ({
-  offer: one(offersTable, {
-    fields: [offerParametersTable.offerId],
-    references: [offersTable.id],
   }),
 }));
 

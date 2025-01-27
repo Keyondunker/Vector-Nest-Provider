@@ -1,7 +1,8 @@
 import { DeploymentStatus } from "@forest-protocols/sdk";
 
 /**
- * The base details should be gathered by the provider from the actual resource source.
+ * The base details that should be gathered by
+ * the provider from the actual resource source.
  */
 export type ResourceDetails = {
   status: DeploymentStatus;
