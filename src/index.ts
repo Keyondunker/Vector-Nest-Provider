@@ -1,18 +1,15 @@
 #!/usr/bin/env node
 import {
   Agreement,
-  AgreementStatus,
   DeploymentStatus,
-  ForestProtocolMarketplaceABI,
+  ProductCategoryABI,
 } from "@forest-protocols/sdk";
-import { config } from "./config";
-import { parseEventLogs } from "viem";
-import { LocalStorage } from "./database/LocalStorage";
+import { Address, parseEventLogs } from "viem";
+import { DB } from "./database/DB";
 import { logger } from "./logger";
 import { rpcClient } from "./clients";
 import { AbstractProvider } from "./abstract/AbstractProvider";
 import * as ansis from "ansis";
-import { NotFound } from "./errors/NotFound";
 import { PostgreSQLDatabaseProvider } from "./product-category/provider";
 
 async function sleep(ms: number) {
@@ -34,11 +31,13 @@ class Program {
     main: new PostgreSQLDatabaseProvider(),
   };
 
+  productCategories: string[] = [];
+
   constructor() {}
 
   // A shorthand for Local Storage instance
   get localStorage() {
-    return LocalStorage.instance;
+    return DB.instance;
   }
 
   async processAgreementCreated(
@@ -54,7 +53,7 @@ class Program {
         deploymentStatus: details.status,
         name: details.name,
         offerId: agreement.offerId,
-        ownerAddress: agreement.ownerAddress,
+        ownerAddress: agreement.userAddr,
         providerId: offer.providerId,
         details: {
           ...details,
@@ -76,7 +75,7 @@ class Program {
           try {
             const resource = await this.localStorage.getResource(
               agreement.id,
-              agreement.ownerAddress
+              agreement.userAddr
             );
 
             if (!resource || !resource.isActive) {
@@ -137,7 +136,7 @@ class Program {
           name: "",
           offerId: agreement.offerId,
           providerId: providerDetails.id,
-          ownerAddress: agreement.ownerAddress,
+          ownerAddress: agreement.userAddr,
           details: {},
         });
       } catch (err: any) {
@@ -153,7 +152,7 @@ class Program {
     try {
       const resource = await this.localStorage.getResource(
         agreement.id,
-        agreement.ownerAddress
+        agreement.userAddr
       );
       if (resource) {
         await provider.delete(agreement, resource);
@@ -176,9 +175,19 @@ class Program {
     await this.localStorage.deleteResource(agreement.id);
   }
 
-  getProviderByAddress(providerOwnerAddress: string) {
+  getProductCategoryByAddress(address: Address) {
     for (const [_, provider] of Object.entries(this.providers)) {
-      if (provider.account!.address === providerOwnerAddress) {
+      for (const [pcAddress, pc] of Object.entries(
+        provider.productCategories
+      )) {
+        if (pcAddress == address.toLowerCase()) return pc;
+      }
+    }
+  }
+
+  getProviderByAddress(ownerAddress: Address) {
+    for (const [_, provider] of Object.entries(this.providers)) {
+      if (provider.account.address == ownerAddress) {
         return provider;
       }
     }
@@ -205,14 +214,15 @@ class Program {
             currentBlockNumber
           )}, skipping...`
         );
-        await LocalStorage.instance.saveTxAsProcessed(currentBlockNumber, "");
+        await DB.instance.saveTxAsProcessed(currentBlockNumber, "");
         currentBlockNumber++;
         continue;
       }
 
       logger.info(`Processing block ${colorNumber(block.number)}`);
       for (const tx of block.transactions) {
-        if (tx.to?.toLowerCase() !== config.contractAddress.toLowerCase()) {
+        // If the TX is not belong to any of the product category contracts, skip it.
+        if (!this.productCategories.includes(tx.to?.toLowerCase() || "")) {
           continue;
         }
 
@@ -225,7 +235,7 @@ class Program {
           continue;
         }
 
-        const txRecord = await LocalStorage.instance.getTransaction(
+        const txRecord = await DB.instance.getTransaction(
           tx.blockNumber,
           tx.hash
         );
@@ -238,7 +248,7 @@ class Program {
         }
 
         const events = parseEventLogs({
-          abi: ForestProtocolMarketplaceABI,
+          abi: ProductCategoryABI,
           logs: receipt.logs,
         });
 
@@ -247,13 +257,24 @@ class Program {
             event.eventName == "AgreementCreated" ||
             event.eventName == "AgreementClosed"
           ) {
-            const provider = this.getProviderByAddress(
-              event.args.providerOwnerAddr
-            );
+            // Theoretically there is no way for pc to be not found
+            // Because at startup, they are added based on blockchain data.
+            const pc = this.getProductCategoryByAddress(tx.to!)!;
+            const agreement = await pc.getAgreement(event.args.id as number);
+            const offer = await pc.getOffer(agreement.offerId);
+            const provider = this.getProviderByAddress(offer.ownerAddr);
 
+            // NOTE: Is it possible for a provider to be not found?
             // If the provider is not available in this daemon,
             // save TX as processed and skip it.
             if (!provider) {
+              logger.warning(
+                `Provider (id: ${
+                  event.args.id
+                }) not found in product category ${colorHex(
+                  tx.to!
+                )} for ${colorKeyword(event.eventName)} event. Skipping...`
+              );
               await this.localStorage.saveTxAsProcessed(
                 event.blockNumber,
                 event.transactionHash
@@ -267,16 +288,13 @@ class Program {
               )} received for provider ${colorHex(provider.account!.address)}`
             );
 
-            const agreement = await provider.marketplace.getAgreement(
-              Number(event.args.id)
-            );
-
             if (event.eventName == "AgreementCreated") {
               await this.processAgreementCreated(agreement, provider);
             } else {
               await this.processAgreementClosed(agreement, provider);
             }
 
+            // Save the TX as processed
             await this.localStorage.saveTxAsProcessed(
               event.blockNumber,
               event.transactionHash
@@ -286,7 +304,7 @@ class Program {
       }
 
       // Empty hash means block itself, so this block is completely processed
-      await LocalStorage.instance.saveTxAsProcessed(currentBlockNumber, "");
+      await DB.instance.saveTxAsProcessed(currentBlockNumber, "");
       currentBlockNumber++;
     }
   }
@@ -298,12 +316,21 @@ class Program {
     // Initialize providers
     for (const [tag, provider] of Object.entries(this.providers)) {
       await provider.init(tag);
+      this.productCategories.push(
+        ...Object.keys(provider.productCategories).map((address) =>
+          address.toLowerCase()
+        )
+      );
+
       logger.info(
         `Provider initialized; tag: ${tag}, address: ${ansis.yellow.bold(
           provider.account!.address
         )}`
       );
     }
+
+    // Make each item unique
+    this.productCategories = [...new Set(this.productCategories)];
 
     // Check agreement balances at startup then in every minute
     this.checkAgreementBalances();
@@ -315,29 +342,35 @@ class Program {
     const closingRequests: Promise<any>[] = [];
 
     for (const [_, provider] of Object.entries(this.providers)) {
-      const agreements = await provider.marketplace.getAllProviderAgreements(
-        provider.account!.address,
-        { status: AgreementStatus.Active }
-      );
-
-      for (const agreement of agreements) {
-        const balance = await provider.marketplace.getAgreementBalance(
-          agreement.id
+      for (const [_, pc] of Object.entries(provider.productCategories)) {
+        const agreements = await pc.getAllProviderAgreements(
+          provider.account!.address
         );
 
-        // If balance of the agreement is ran out of,
-        if (balance <= 0n) {
-          logger.warning(
-            `User ${agreement.ownerAddress} has ran out of balance for agreement #${agreement.id}`
-          );
-          // Queue closeAgreement call to the promise list.
-          closingRequests.push(
-            provider.marketplace.closeAgreement(agreement.id).catch((err) => {
-              logger.error(
-                `Error thrown while trying to force close agreement #${agreement.id}: ${err.stack}`
-              );
-            })
-          );
+        for (const agreement of agreements) {
+          const balance = await pc.getAgreementBalance(agreement.id);
+
+          // If balance of the agreement is ran out of,
+          if (balance <= 0n) {
+            logger.warning(
+              `User ${
+                agreement.userAddr
+              } has ran out of balance for agreement ${colorNumber(
+                agreement.id
+              )}`
+            );
+
+            // Queue closeAgreement call to the promise list.
+            closingRequests.push(
+              pc.closeAgreement(agreement.id).catch((err) => {
+                logger.error(
+                  `Error thrown while trying to force close agreement ${colorNumber(
+                    agreement.id
+                  )}: ${err.stack}`
+                );
+              })
+            );
+          }
         }
       }
     }
@@ -347,7 +380,7 @@ class Program {
 
   async findStartBlock() {
     const latestProcessedBlock =
-      await LocalStorage.instance.getLatestProcessedBlockHeight();
+      await DB.instance.getLatestProcessedBlockHeight();
 
     // TODO: Find the registration TX of the provider and start from there
 

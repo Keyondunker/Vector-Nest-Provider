@@ -1,18 +1,21 @@
 import { rpcClient } from "@/clients";
 import { config } from "@/config";
-import { LocalStorage } from "@/database/LocalStorage";
+import { DB } from "@/database/DB";
 import { DbOffer, Resource } from "@/database/schema";
 import { NotFound } from "@/errors/NotFound";
 import { logger } from "@/logger";
 import { ResourceDetails } from "@/types";
+import { Provider } from "@forest-protocols/sdk";
 import {
   Agreement,
-  Marketplace,
   PipeError,
   PipeMethod,
   PipeResponseCode,
+  ProductCategory,
+  Registry,
   XMTPPipe,
 } from "@forest-protocols/sdk";
+import { red } from "ansis";
 import { Account, Address } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { z } from "zod";
@@ -27,11 +30,15 @@ export abstract class AbstractProvider<
   /**
    * Communication pipe to let users to interact with their resources.
    */
-  pipe?: XMTPPipe;
+  pipe!: XMTPPipe;
 
-  marketplace: Marketplace = new Marketplace();
+  registry!: Registry;
 
-  account?: Account;
+  productCategories: { [address: string]: ProductCategory } = {};
+
+  account!: Account;
+
+  info!: Provider;
 
   /**
    * Initializes the provider if it needs some async operation to be done before start to use it.
@@ -41,27 +48,59 @@ export abstract class AbstractProvider<
 
     if (!providerInfo) {
       logger.error(
-        `Provider details not found for provider tag "${providerTag}". Please check your providers.json and providers list in src/index.ts`
+        `Provider details not found for provider tag "${providerTag}". Please check your data/providers.json and providers list in src/index.ts`
       );
       process.exit(1);
     }
 
+    // Initialize pipe
     this.pipe = new XMTPPipe(providerInfo.operatorWalletPrivateKey as Address);
 
-    this.account = privateKeyToAccount(
-      providerInfo.providerWalletPrivateKey as `0x${string}`
-    );
-    this.marketplace = Marketplace.createWithClient(rpcClient, this.account);
+    // Disable console.info to get rid out of "XMTP dev" warning
+    const consoleInfo = console.info;
+    console.info = () => {};
 
-    // Initialize pipe
-    await this.pipe.init({
-      chain: config.CHAIN,
-      rpcHost: config.RPC_HOST,
-      env: "dev",
-    });
+    // Use dev env only for local and sepolia chains
+    await this.pipe.init(config.CHAIN === "optimism" ? "production" : "dev");
+
+    // Revert back console.info
+    console.info = consoleInfo;
+
+    // Setup provider account
+    this.account = privateKeyToAccount(
+      providerInfo.providerWalletPrivateKey as Address
+    );
+
+    // Initialize Forest Protocols clients
+    this.registry = Registry.createWithClient(rpcClient, this.account);
+
+    const provider = await this.registry.getActor(this.account.address);
+    if (!provider) {
+      logger.error(
+        red(
+          `Provider address "${this.account.address}" is not registered in the protocol. Please register the provider and try again.`
+        )
+      );
+      process.exit(1);
+    }
+
+    this.info = provider;
+
+    const productCategories = await this.registry.getRegisteredPCsOfProvider(
+      provider.id
+    );
+
+    for (const pcAddress of productCategories) {
+      this.productCategories[pcAddress.toLowerCase()] =
+        ProductCategory.createWithClient(
+          rpcClient,
+          pcAddress as Address,
+          this.account
+        );
+    }
 
     // A shorthand for global local storage
-    const localStorage = LocalStorage.instance;
+    const localStorage = DB.instance;
 
     // Setup pipe standard pipe routes
 

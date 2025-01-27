@@ -1,0 +1,23 @@
+{
+  "name": "string",
+  "softwareStack": "string",
+  "version": "string",
+  "tests": [
+    {
+      "name": "string",
+      "description": "string",
+      "unit": "string",
+      "thresholdValue": "float",
+      "isMin": "bool"
+    }
+  ],
+  "resourceParams": [
+    {
+      "name": "string",
+      "unit": "string",
+      "isFilterable": "bool",
+      "priority": "unint",
+      "isPrimary": "bool"
+    }
+  ]
+}

@@ -11,6 +11,7 @@
     "baseUrl": "./",
     "rootDir": "./",
     "outDir": "./dist",
+    "noEmit": true,
     "paths": {
       "@/*": ["src/*"]
     }

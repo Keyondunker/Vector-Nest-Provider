@@ -5,33 +5,32 @@ import {
   generateCID,
   NotInitialized,
 } from "@forest-protocols/sdk";
-import { z } from "zod";
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { NotFound } from "@/errors/NotFound";
 import { OfferParameterType } from "@/constants";
-import * as schema from "./schema";
-import pg from "pg";
 import { Address, privateKeyToAccount } from "viem/accounts";
 import { logger } from "@/logger";
-import { readdirSync, readFileSync } from "fs";
-import { join } from "path";
-import { nonEmptyStringSchema } from "@/validation/schemas";
+import * as schema from "./schema";
+import pg from "pg";
 
 export type DatabaseClientType = NodePgDatabase<typeof schema>;
 
-export class LocalStorage {
-  private static _instance: LocalStorage;
+/**
+ * Database of this provider daemon
+ */
+export class DB {
+  private static _instance: DB;
 
   client: DatabaseClientType | undefined;
 
   private constructor() {}
 
   static get instance() {
-    if (!LocalStorage._instance) {
-      LocalStorage._instance = new LocalStorage();
+    if (!DB._instance) {
+      DB._instance = new DB();
     }
 
-    return LocalStorage._instance;
+    return DB._instance;
   }
 
   async init() {
@@ -134,7 +133,6 @@ export class LocalStorage {
       return {};
     }
 
-    result.details.cid = result.cid;
     return result.details;
   }
 
@@ -221,9 +219,9 @@ export class LocalStorage {
 
         // NOTE: This is where we store the additional data about the provider inside the database
         const details = {
-          name: info.name,
-          description: info.description,
-          homepage: info.homepage,
+          name: info.details.name,
+          description: info.details.description,
+          homepage: info.details.homepage,
         };
 
         const account = privateKeyToAccount(

@@ -1,10 +1,12 @@
 {
   "main": {
-    "name": "",
-    "homepage": "N/A",
-    "description": "N/A",
+   "details": {
+      "name": "name of the provider",
+      "description": "n",
+      "homepage": "n/a"
+    },
     "providerWalletPrivateKey": "0x",
     "billingWalletPrivateKey": "0x",
-    "operatorWalletPrivateKey": "0x"
+    "operatorWalletPrivateKey": "0x",
   },
 }

@@ -7,7 +7,7 @@ import {
 import { AbstractProvider } from "@/abstract/AbstractProvider";
 import { ResourceDetails } from "@/types";
 import { Resource } from "@/database/schema";
-import { LocalStorage } from "@/database/LocalStorage";
+import { DB } from "@/database/DB";
 import { NotFound } from "@/errors/NotFound";
 
 /**
@@ -67,7 +67,7 @@ export abstract class BasePostgreSQLDatabaseProvider extends AbstractProvider<Po
       }
 
       const agreementId = req.body.id;
-      const resource = await LocalStorage.instance.getResource(
+      const resource = await DB.instance.getResource(
         agreementId,
         req.requester
       );
@@ -103,7 +103,7 @@ export abstract class BasePostgreSQLDatabaseProvider extends AbstractProvider<Po
       }
 
       const agreementId = req.body.id;
-      const resource = await LocalStorage.instance.getResource(
+      const resource = await DB.instance.getResource(
         agreementId,
         req.requester
       );
