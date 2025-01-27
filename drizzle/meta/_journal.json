@@ -8,6 +8,13 @@
       "when": 1737995825470,
       "tag": "0000_fancy_leper_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1738003102129,
+      "tag": "0001_curved_sandman",
+      "breakpoints": true
     }
   ]
 }

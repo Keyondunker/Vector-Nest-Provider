@@ -1,0 +1,2 @@
+ALTER TABLE "product_categories" ADD COLUMN "details" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "product_categories" ADD CONSTRAINT "product_categories_address_unique" UNIQUE("address");

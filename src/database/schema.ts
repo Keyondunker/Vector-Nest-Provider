@@ -63,7 +63,8 @@ relations(providersTable, ({ many }) => ({
 
 export const productCategoriesTable = pgTable("product_categories", {
   id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  address: varchar({ length: 100 }).notNull(),
+  address: varchar({ length: 100 }).notNull().unique(),
+  details: jsonb().$type<any>().notNull().default({}),
 });
 relations(productCategoriesTable, ({ many }) => ({
   offers: many(offersTable),
