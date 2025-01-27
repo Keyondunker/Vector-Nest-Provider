@@ -10,15 +10,11 @@
     "type": "git",
     "url": "git+https://github.com/dbForest/provider-template.git"
   },
-  "license": "ISC",
+  "license": "MIT",
   "author": "Forest Protocols Development Team",
   "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "lint": "tsc",
     "dev": "dotenvx run -- tsx src/index.ts",
