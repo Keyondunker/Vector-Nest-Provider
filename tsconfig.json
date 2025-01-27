@@ -17,5 +17,5 @@
     }
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src/**/*.ts", "drizzle.config.ts"]
+  "include": ["src/**/*.ts"]
 }

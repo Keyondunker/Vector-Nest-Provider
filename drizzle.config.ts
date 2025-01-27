@@ -1,11 +1,11 @@
-import { config } from "@/config";
 import { defineConfig } from "drizzle-kit";
+import process from "node:process";
 
 export default defineConfig({
   out: "./drizzle",
   schema: "./src/database/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: config.DATABASE_URL,
+    url: process.env.DATABASE_URL!,
   },
 });
