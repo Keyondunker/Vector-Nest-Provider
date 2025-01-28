@@ -1,61 +1,69 @@
 import { Agreement } from "@forest-protocols/sdk";
-import { DbOffer, Resource } from "@/database/schema";
 import {
-  BasePostgreSQLDatabaseProvider,
-  PostgreSQLDatabaseDetails,
+  BaseExampleProductProvider,
+  ExampleProductDetails,
 } from "./base-provider";
+import { Resource, OfferDetails } from "@/types";
 
 /**
  * The main class that implements provider specific actions.
  * @responsible Provider
  */
-export class PostgreSQLDatabaseProvider extends BasePostgreSQLDatabaseProvider {
-  async resetCredentials(
-    agreement: Agreement,
-    resource: Resource
-  ): Promise<any> {
-    /**
-     * TODO: Implement how the credentials would be reset.
-     */
-    throw new Error("Method not implemented.");
-  }
-
-  async sqlQuery(
+export class MainProviderImplementation extends BaseExampleProductProvider {
+  async doSomething(
     agreement: Agreement,
     resource: Resource,
-    query: string
-  ): Promise<any[]> {
+    additionalArgument: string
+  ): Promise<{ stringResult: string; numberResult: number }> {
     /**
-     * TODO: Implement how an SQL query would be executed and return the results.
+     * TODO: Implement the logic to achieve purpose of this function.
      */
-    throw new Error("Method not implemented.");
+
+    // An example;
+
+    // Some important logic....
+
+    return {
+      numberResult: agreement.id,
+      stringResult: `${resource.name}-${additionalArgument}`,
+    };
   }
 
   async create(
     agreement: Agreement,
-    offer: DbOffer
-  ): Promise<PostgreSQLDatabaseDetails> {
+    offer: OfferDetails
+  ): Promise<ExampleProductDetails> {
     /**
-     * TODO: Implement the resource creation process.
+     * TODO: Implement how the resource will be created.
      */
+    // If there is no additional action need for the deletion, you can
+    // just leave this method as empty.
     throw new Error("Method not implemented.");
   }
+
   async getDetails(
     agreement: Agreement,
     resource: Resource
-  ): Promise<PostgreSQLDatabaseDetails> {
+  ): Promise<ExampleProductDetails> {
     /**
-     * TODO: Implement how to gather details from the resource.
+     * TODO: Implement how the details retrieved from the resource source.
      */
+
+    // If there is no details, you can just return the existing details;
+    // return resource.details;
     throw new Error("Method not implemented.");
   }
+
   async delete(
     agreement: Agreement,
     resource: Resource
-  ): Promise<PostgreSQLDatabaseDetails> {
+  ): Promise<ExampleProductDetails> {
     /**
-     * TODO: Implement the resource deletion process.
+     * TODO: Implement how the resource will be deleted.
      */
+
+    // If there is no additional action need for the deletion, you can
+    // just leave this method as empty.
     throw new Error("Method not implemented.");
   }
 }
