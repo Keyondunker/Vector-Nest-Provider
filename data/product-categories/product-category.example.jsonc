@@ -5,24 +5,26 @@
 {
   /* Smart contract address of the product category */
   "address": "0x0000000000000000000000000000000000000000",
-  "name": "PostgreSQL",
-  "softwareStack": "PostgreSQL",
-  "version": "16",
-  "tests": [],
-  "resourceParams": [
-    {
-      "name": "RAM",
-      "unit": "GB",
-      "isFilterable": true,
-      "priority": 10,
-      "isPrimary": true
-    },
-    {
-      "name": "CPU",
-      "unit": "Cores",
-      "isFilterable": true,
-      "priority": 20,
-      "isPrimary": true
-    }
-  ]
+  "details": {
+    "name": "PostgreSQL",
+    "softwareStack": "PostgreSQL",
+    "version": "16",
+    "tests": [],
+    "resourceParams": [
+      {
+        "name": "RAM",
+        "unit": "GB",
+        "isFilterable": true,
+        "priority": 10,
+        "isPrimary": true
+      },
+      {
+        "name": "CPU",
+        "unit": "Cores",
+        "isFilterable": true,
+        "priority": 20,
+        "isPrimary": true
+      }
+    ]
+  }
 }

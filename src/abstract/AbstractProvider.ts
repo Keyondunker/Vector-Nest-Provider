@@ -107,8 +107,8 @@ export abstract class AbstractProvider<
     );
 
     for (const pcAddress of productCategories) {
-      const pcDetails = config.productCategories[pcAddress.toLowerCase()];
-      if (!pcDetails) {
+      const pcInfo = config.productCategories[pcAddress.toLowerCase()];
+      if (!pcInfo) {
         logger.error(
           red(
             `Product category ${pcAddress} details are not available inside data/product-categories directory. Please define the details of the product category and try again`
@@ -126,7 +126,7 @@ export abstract class AbstractProvider<
 
       await DB.saveProductCategory(
         pcAddress.toLowerCase() as Address,
-        pcDetails
+        pcInfo.details
       );
 
       // Save offer details to the database

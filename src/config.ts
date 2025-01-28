@@ -21,7 +21,10 @@ function parseEnv() {
   const parsedEnv = environmentSchema.safeParse(process.env, {});
 
   if (parsedEnv.error) {
-    console.error(red(fromError(parsedEnv).toString()));
+    console.error(
+      "Error while parsing environment variables:",
+      red(fromError(parsedEnv).toString())
+    );
     process.exit(1);
   }
 
@@ -31,19 +34,21 @@ function parseEnv() {
 function parseProductCategories() {
   const pcSchema = z.object({
     address: addressSchema.transform((value) => value.toLowerCase()),
-    name: z.string(),
-    softwareStack: z.string(),
-    version: z.string(),
-    tests: z.array(z.any()), // TODO: Define object shape
-    resourceParams: z.array(
-      z.object({
-        name: z.string(),
-        unit: z.string(),
-        isFilterable: z.boolean(),
-        isPrimary: z.boolean(),
-        priority: z.number().positive(),
-      })
-    ),
+    details: z.object({
+      name: z.string(),
+      softwareStack: z.string(),
+      version: z.string(),
+      tests: z.array(z.any()), // TODO: Define object shape
+      resourceParams: z.array(
+        z.object({
+          name: z.string(),
+          unit: z.string(),
+          isFilterable: z.boolean(),
+          isPrimary: z.boolean(),
+          priority: z.number().positive(),
+        })
+      ),
+    }),
   });
 
   const productCategories: {
@@ -63,8 +68,7 @@ function parseProductCategories() {
       const validation = pcSchema.safeParse(rawObject);
 
       if (validation.error) {
-        console.error(red(fromError(validation.error)).toString());
-        process.exit(1);
+        throw new Error(fromError(validation.error).toString());
       }
 
       const obj = validation.data;
@@ -106,8 +110,7 @@ function parseProviders() {
       // Validate each provider object
       const provider = providerSchema.safeParse(info, {});
       if (provider.error) {
-        console.error(red(fromError(provider.error)).toString());
-        process.exit(1);
+        throw new Error(fromError(provider.error).toString());
       }
 
       providers[name] = provider.data!;
@@ -153,8 +156,7 @@ function parseOffers() {
       const validation = offerSchema.safeParse(rawObject);
 
       if (validation.error) {
-        console.error(red(fromError(validation.error)).toString());
-        process.exit(1);
+        throw new Error(fromError(validation.error).toString());
       }
 
       const offer = validation.data;
