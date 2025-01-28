@@ -60,7 +60,7 @@ class Program {
       }
 
       // No need to check existence, because we have already checked the offer.
-      const productCategory = await DB.getProductCategory(pcAddress)!;
+      const productCategory = (await DB.getProductCategory(pcAddress))!;
       const details = await provider.create(agreement, offer);
 
       await DB.createResource({
@@ -125,7 +125,7 @@ class Program {
               );
 
               // Update the status and gathered details
-              await DB.updateResource(agreement.id, {
+              await DB.updateResource(agreement.id, pcAddress, {
                 deploymentStatus: DeploymentStatus.Running,
                 details: resourceDetails,
               });
@@ -151,7 +151,7 @@ class Program {
 
       // Save the resource as failed
       try {
-        const pc = await DB.getProductCategory(pcAddress);
+        const pc = (await DB.getProductCategory(pcAddress))!;
 
         // Save that resource as a failed deployment
         await DB.createResource({
@@ -199,7 +199,7 @@ class Program {
       logger.error(`Error while deleting the resource: ${err.stack}`);
     }
 
-    await DB.deleteResource(agreement.id);
+    await DB.deleteResource(agreement.id, pcAddress);
   }
 
   getProductCategoryByAddress(address: Address) {

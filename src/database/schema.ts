@@ -123,3 +123,4 @@ export const blockchainTxsTable = pgTable(
 export type DbResource = typeof resourcesTable.$inferSelect;
 export type DbResourceInsert = typeof resourcesTable.$inferInsert;
 export type DbOffer = typeof offersTable.$inferSelect;
+export type DbProductCategory = typeof productCategoriesTable.$inferSelect;

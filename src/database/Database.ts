@@ -4,9 +4,10 @@ import { DeploymentStatus, NotInitialized } from "@forest-protocols/sdk";
 import { and, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { PipeErrorNotFound } from "@/errors/pipe/PipeErrorNotFound";
 import { Address } from "viem/accounts";
+import { OfferDetails, Resource } from "@/types";
+import { logger } from "@/logger";
 import * as schema from "./schema";
 import pg from "pg";
-import { OfferDetails, Resource } from "@/types";
 
 export type DatabaseClientType = NodePgDatabase<typeof schema>;
 
@@ -15,6 +16,7 @@ export type DatabaseClientType = NodePgDatabase<typeof schema>;
  */
 class Database {
   client: DatabaseClientType | undefined;
+  logger = logger.child({ context: "Database" });
 
   constructor() {
     const pool = new pg.Pool({
@@ -39,6 +41,7 @@ class Database {
    */
   async updateResource(
     id: number,
+    pcAddress: Address,
     values: {
       name?: string;
       details?: any;
@@ -48,16 +51,30 @@ class Database {
     }
   ) {
     this.checkClient();
+    const pc = await this.getProductCategory(pcAddress);
+
+    if (!pc) {
+      this.logger.error(
+        `Product category not found ${pcAddress} while looking for the resource #${id}`
+      );
+      return;
+    }
+
     await this.client!.update(schema.resourcesTable)
       .set(values)
-      .where(eq(schema.resourcesTable.id, id));
+      .where(
+        and(
+          eq(schema.resourcesTable.id, id),
+          eq(schema.resourcesTable.pcAddressId, pc.id)
+        )
+      );
   }
 
   /**
    * Marks a resource record as deleted (not active) and deletes its details.
    */
-  async deleteResource(id: number) {
-    await this.updateResource(id, {
+  async deleteResource(id: number, pcAddress: Address) {
+    await this.updateResource(id, pcAddress, {
       isActive: false,
       deploymentStatus: DeploymentStatus.Closed,
       details: {}, // TODO: Should we delete all the details (including credentials)?
@@ -133,7 +150,9 @@ class Database {
     };
   }
 
-  async getProductCategory(address: Address) {
+  async getProductCategory(
+    address: Address
+  ): Promise<schema.DbProductCategory | undefined> {
     address = address.toLowerCase() as Address;
     const [pc] = await this.client!.select()
       .from(schema.productCategoriesTable)
