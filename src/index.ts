@@ -11,6 +11,12 @@ import { rpcClient } from "./clients";
 import { AbstractProvider } from "./abstract/AbstractProvider";
 import * as ansis from "ansis";
 import { MainProviderImplementation } from "./product-category/provider";
+import {
+  adjectives,
+  animals,
+  colors,
+  uniqueNamesGenerator,
+} from "unique-names-generator";
 
 async function sleep(ms: number) {
   return await new Promise((res) => setTimeout(res, ms));
@@ -60,7 +66,14 @@ class Program {
       await DB.createResource({
         id: agreement.id,
         deploymentStatus: details.status,
-        name: details.name,
+
+        // If the name is not defined by the provider, just give a random name
+        name:
+          details.name ||
+          uniqueNamesGenerator({
+            dictionaries: [adjectives, colors, animals],
+            length: 2,
+          }),
         offerId: offer.id,
         ownerAddress: agreement.userAddr,
         pcAddressId: productCategory.id,

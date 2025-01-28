@@ -1,4 +1,4 @@
-import { DeploymentStatus, ProviderDetails } from "@forest-protocols/sdk";
+import { DeploymentStatus } from "@forest-protocols/sdk";
 import { Address } from "viem";
 
 /**
@@ -7,10 +7,17 @@ import { Address } from "viem";
  */
 export type ResourceDetails = {
   status: DeploymentStatus;
-  name: string;
+
+  /**
+   * Name of the resource. If it is undefined,
+   * a random name will be assigned to the resource. */
+  name?: string;
   [key: string]: any;
 };
 
+/**
+ * Offer details from the database.
+ */
 export type OfferDetails = {
   id: number;
   details: any;
@@ -18,6 +25,9 @@ export type OfferDetails = {
   productCategory: Address;
 };
 
+/**
+ * Resource details from the database.
+ */
 export type Resource = {
   id: number;
   name: string;
