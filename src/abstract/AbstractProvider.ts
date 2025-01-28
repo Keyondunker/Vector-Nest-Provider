@@ -155,12 +155,10 @@ export abstract class AbstractProvider<
       this.productCategories[pcAddress.toLowerCase()] = pc;
     }
 
-    // Setup pipe standard pipe routes
+    // Setup standard pipe routes
 
     /**
      * Retrieve all of the offers that made by the provider.
-     * method: GET
-     * path: /offers
      */
     this.pipe.route(PipeMethod.GET, "/offers", async (_) => {
       const offers = (
@@ -177,8 +175,6 @@ export abstract class AbstractProvider<
 
     /**
      * Retrieve details about provider itself.
-     * method: GET
-     * path: /details
      */
     this.pipe.route(PipeMethod.GET, "/details", async (_) => {
       const details = await DB.getProviderDetails(this.actorInfo.ownerAddr);
@@ -190,19 +186,40 @@ export abstract class AbstractProvider<
     });
 
     /**
+     * Retrieves a product category details (if it is available within this provider)
+     */
+    this.pipe.route(PipeMethod.GET, "/product-category", async (req) => {
+      const params = validateBodyOrParams(
+        req.params,
+        z.object({
+          pc: addressSchema,
+        })
+      );
+
+      const pc = await DB.getProductCategory(params.pc as Address);
+
+      if (!pc) {
+        throw new PipeErrorNotFound("Product category");
+      }
+
+      return {
+        code: PipeResponseCode.OK,
+        body: pc.details,
+      };
+    });
+
+    /**
      * Retrieve details (e.g credentials) of a resource.
-     * method: GET
-     * path: /resource
-     * params:
-     *  id: number -> ID of the resource (agreement).
-     *  pc: string -> Product category address the resource created in.
      */
     this.pipe.route(PipeMethod.GET, "/resource", async (req) => {
       const params = validateBodyOrParams(
         req.params,
         z.object({
+          /** ID of the resource. */
           id: z.number(),
-          pc: addressSchema,
+
+          /** Product category address that the resource created in. */
+          pc: addressSchema, // A pre-defined Zod schema for smart contract addresses.
         })
       );
 
