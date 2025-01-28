@@ -5,7 +5,7 @@ import {
   ProductCategoryABI,
 } from "@forest-protocols/sdk";
 import { Address, parseEventLogs } from "viem";
-import { DB } from "./database/DB";
+import { DB } from "./database/Database";
 import { logger } from "./logger";
 import { rpcClient } from "./clients";
 import { AbstractProvider } from "./abstract/AbstractProvider";
@@ -35,31 +35,42 @@ class Program {
 
   constructor() {}
 
-  // A shorthand for Local Storage instance
-  get localStorage() {
-    return DB.instance;
-  }
-
   async processAgreementCreated(
     agreement: Agreement,
+    pcAddress: Address,
     provider: AbstractProvider
   ) {
     try {
-      const offer = await this.localStorage.getOffer(agreement.offerId);
+      const offer = await DB.getOffer(agreement.offerId, pcAddress);
+
+      if (!offer) {
+        logger.error(
+          `Offer ${agreement.offerId} is not found in product category ${pcAddress} for provider ${provider.actorInfo.ownerAddr}`
+        );
+
+        // Since the offer is not found in the database, we cannot save
+        // this resource as a failed deployment.
+        return;
+      }
+
+      // No need to check existence, because we have already checked the offer.
+      const productCategory = await DB.getProductCategory(pcAddress)!;
       const details = await provider.create(agreement, offer);
 
-      await this.localStorage.createResource({
+      await DB.createResource({
         id: agreement.id,
         deploymentStatus: details.status,
         name: details.name,
-        offerId: agreement.offerId,
+        offerId: offer.id,
         ownerAddress: agreement.userAddr,
-        providerId: offer.providerId,
+        pcAddressId: productCategory.id,
+        providerId: provider.actorInfo.id,
         details: {
           ...details,
-          // These are already stored in the other column
-          status: undefined,
+
+          // We store those fields inside columns, not in the JSON object.
           name: undefined,
+          status: undefined,
         },
       });
 
@@ -70,12 +81,14 @@ class Program {
           )} resource has been created successfully`
         );
 
+        // TODO: Create that interval on startup if there are resources still in "Deploying" state
         // Create an interval to keep track of the deployment process
         const interval = setInterval(async () => {
           try {
-            const resource = await this.localStorage.getResource(
+            const resource = await DB.getResource(
               agreement.id,
-              agreement.userAddr
+              agreement.userAddr,
+              pcAddress
             );
 
             if (!resource || !resource.isActive) {
@@ -99,7 +112,7 @@ class Program {
               );
 
               // Update the status and gathered details
-              await this.localStorage.updateResource(agreement.id, {
+              await DB.updateResource(agreement.id, {
                 deploymentStatus: DeploymentStatus.Running,
                 details: resourceDetails,
               });
@@ -125,17 +138,16 @@ class Program {
 
       // Save the resource as failed
       try {
-        const providerDetails = await this.localStorage.getProvider(
-          provider.account!.address
-        );
+        const pc = await DB.getProductCategory(pcAddress);
 
         // Save that resource as a failed deployment
-        await this.localStorage.createResource({
+        await DB.createResource({
           id: agreement.id,
           deploymentStatus: DeploymentStatus.Failed,
           name: "",
+          pcAddressId: pc.id,
           offerId: agreement.offerId,
-          providerId: providerDetails.id,
+          providerId: provider.actorInfo.id,
           ownerAddress: agreement.userAddr,
           details: {},
         });
@@ -147,12 +159,14 @@ class Program {
 
   async processAgreementClosed(
     agreement: Agreement,
+    pcAddress: Address,
     provider: AbstractProvider
   ) {
     try {
-      const resource = await this.localStorage.getResource(
+      const resource = await DB.getResource(
         agreement.id,
-        agreement.userAddr
+        agreement.userAddr,
+        pcAddress
       );
       if (resource) {
         await provider.delete(agreement, resource);
@@ -172,7 +186,7 @@ class Program {
       logger.error(`Error while deleting the resource: ${err.stack}`);
     }
 
-    await this.localStorage.deleteResource(agreement.id);
+    await DB.deleteResource(agreement.id);
   }
 
   getProductCategoryByAddress(address: Address) {
@@ -214,7 +228,7 @@ class Program {
             currentBlockNumber
           )}, skipping...`
         );
-        await DB.instance.saveTxAsProcessed(currentBlockNumber, "");
+        await DB.saveTxAsProcessed(currentBlockNumber, "");
         currentBlockNumber++;
         continue;
       }
@@ -235,10 +249,7 @@ class Program {
           continue;
         }
 
-        const txRecord = await DB.instance.getTransaction(
-          tx.blockNumber,
-          tx.hash
-        );
+        const txRecord = await DB.getTransaction(tx.blockNumber, tx.hash);
 
         if (txRecord?.isProcessed) {
           logger.info(
@@ -275,7 +286,7 @@ class Program {
                   tx.to!
                 )} for ${colorKeyword(event.eventName)} event. Skipping...`
               );
-              await this.localStorage.saveTxAsProcessed(
+              await DB.saveTxAsProcessed(
                 event.blockNumber,
                 event.transactionHash
               );
@@ -289,13 +300,13 @@ class Program {
             );
 
             if (event.eventName == "AgreementCreated") {
-              await this.processAgreementCreated(agreement, provider);
+              await this.processAgreementCreated(agreement, tx.to!, provider);
             } else {
-              await this.processAgreementClosed(agreement, provider);
+              await this.processAgreementClosed(agreement, tx.to!, provider);
             }
 
             // Save the TX as processed
-            await this.localStorage.saveTxAsProcessed(
+            await DB.saveTxAsProcessed(
               event.blockNumber,
               event.transactionHash
             );
@@ -304,15 +315,12 @@ class Program {
       }
 
       // Empty hash means block itself, so this block is completely processed
-      await DB.instance.saveTxAsProcessed(currentBlockNumber, "");
+      await DB.saveTxAsProcessed(currentBlockNumber, "");
       currentBlockNumber++;
     }
   }
 
   async init() {
-    logger.info("Initializing database connection");
-    await this.localStorage.init();
-
     // Initialize providers
     for (const [tag, provider] of Object.entries(this.providers)) {
       await provider.init(tag);
@@ -379,8 +387,7 @@ class Program {
   }
 
   async findStartBlock() {
-    const latestProcessedBlock =
-      await DB.instance.getLatestProcessedBlockHeight();
+    const latestProcessedBlock = await DB.getLatestProcessedBlockHeight();
 
     // TODO: Find the registration TX of the provider and start from there
 
