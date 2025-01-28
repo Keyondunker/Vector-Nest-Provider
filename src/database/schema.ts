@@ -11,7 +11,8 @@ import {
   primaryKey,
   varchar,
 } from "drizzle-orm/pg-core";
-import { DeploymentStatus } from "@forest-protocols/sdk";
+import { DeploymentStatus, ProviderDetails } from "@forest-protocols/sdk";
+import { Address } from "viem";
 
 export const resourcesTable = pgTable(
   "resources",
@@ -82,6 +83,10 @@ export const offersTable = pgTable(
       .references(() => productCategoriesTable.id)
       .notNull(),
     details: jsonb().$type<any>().notNull(),
+    deploymentParams: json("deployment_params")
+      .$type<any>()
+      .notNull()
+      .default({}),
   },
   (table) => [
     primaryKey({
@@ -115,18 +120,6 @@ export const blockchainTxsTable = pgTable(
   ]
 );
 
+export type DbResource = typeof resourcesTable.$inferSelect;
 export type DbResourceInsert = typeof resourcesTable.$inferInsert;
-export type Resource = typeof resourcesTable.$inferSelect;
-
-export type DbOffer = {
-  id: number;
-  name: string;
-  deploymentParams: any;
-  cid: string;
-  providerId: number;
-  parameters: {
-    name: string;
-    value: string;
-    type: OfferParameterType;
-  }[];
-};
+export type DbOffer = typeof offersTable.$inferSelect;

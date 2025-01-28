@@ -1,0 +1,1 @@
+ALTER TABLE "offers" ADD COLUMN "deployment_params" json DEFAULT '{}'::json NOT NULL;
