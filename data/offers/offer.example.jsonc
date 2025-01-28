@@ -1,0 +1,28 @@
+/* This file contains a single offer details made by a provider. */
+{
+  /* On-chain offer id */
+  "id": 1,
+
+  /* Product category that this offer made in */
+  "productCategory": "0x0000000000000000000000000000000000000000",
+
+  "deploymentParams": {
+    "region": "eu-west-1",
+    "instance-type": "e2-m1"
+  },
+
+  /* Details of the offer */
+  "details": {
+    "name": "Europe Fast Example Product",
+    "resourceParams": [
+      {
+        "name": "RAM",
+        "value": 4
+      },
+      {
+        "name": "CPU",
+        "value": 2
+      }
+    ]
+  }
+}
