@@ -113,40 +113,40 @@ classDiagram
 
 	class BaseVectorDBProvider {
 		<<abstract class>>
-		+search(agreement: Agreement, resource: Resource, collection: string, vectorField: string, embeddings: any[], options(optional): { limit(optional): number, metricType(optional): MetricType })* Promise~any[]~
-		+insertData(agreement: Agreement, resource: Resource, collection: string, data: { [field: string]: any })* Promise~void~
-		+deleteData(agreement: Agreement, resource: Resource, collection: string, conditions: { [field: string]: ConditionValue })* Promise~void~
-		+createCollection(agreement: Agreement, resource: Resource, name: string, fields: Field[])* Promise~void~
-		+deleteCollection(agreement: Agreement, resource: Resource, name: string)* Promise~void~
+		+search(agreement Agreement, resource Resource, collection string, vectorField string, embeddings any[], options(optional) { limit(optional) number, metricType(optional) MetricType })* Promise~any[]~
+		+insertData(agreement Agreement, resource Resource, collection string, data { [field string] any })* Promise~void~
+		+deleteData(agreement Agreement, resource Resource, collection string, conditions { [field string] ConditionValue })* Promise~void~
+		+createCollection(agreement Agreement, resource Resource, name string, fields Field[])* Promise~void~
+		+deleteCollection(agreement Agreement, resource Resource, name string)* Promise~void~
 	}
 
 	class AbstractProvider~DetailsType=ResourceDetails~ {
 		<<abstract class>>
-		account(optional): Account
-		pipe(optional): XMTPPipe
-		marketplace: Marketplace
+		account(optional) Account
+		pipe(optional) XMTPPipe
+		marketplace Marketplace
 
-		+init(providerTag: string) void
-		+create(agreement: Agreement, offer: OfferDetails)* Promise~DetailsType~
-		+getDetails(agreement: Agreement, resource: Resource)* Promise~DetailsType~
-		+delete(agreement: Agreement, resource: Resource)* Promise~DetailsType~
+		+init(providerTag string) void
+		+create(agreement Agreement, offer OfferDetails)* Promise~DetailsType~
+		+getDetails(agreement Agreement, resource Resource)* Promise~DetailsType~
+		+delete(agreement Agreement, resource Resource)* Promise~DetailsType~
 	}
 
 	class ResourceDetails {
 		<<type or interface>>
-		status: DeploymentStatus
-		name(optional): string
-		[fieldName: string]: any
+		status DeploymentStatus
+		name(optional) string
+		[fieldName string] any
 	}
 
 	class VectorDBDetails {
 		<<type or interface>>
-		_credentials: any;
+		_credentials any;
 	}
 
-	BaseVectorDBProvider <|-- AbstractProvider~VectorDBDetails~ : inherits
-	YourProvider <|-- BaseVectorDBProvider : inherits and implements abstract methods
-	VectorDBDetails <|-- ResourceDetails : extends
+	BaseVectorDBProvider <|-- AbstractProvider~VectorDBDetails~ inherits
+	YourProvider <|-- BaseVectorDBProvider inherits and implements abstract methods
+	VectorDBDetails <|-- ResourceDetails extends
 ```
 
 ## Become a Validator [TODO]
