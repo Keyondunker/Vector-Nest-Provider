@@ -1,5 +1,4 @@
 import { Agreement } from "@forest-protocols/sdk";
-import { DbOffer, Resource } from "@/database/schema";
 import {
   BaseVectorDBProvider,
   ConditionValue,
@@ -7,6 +6,7 @@ import {
   MetricType,
   VectorDBDetails,
 } from "./base-provider";
+import { OfferDetails, Resource } from "@/types";
 
 /**
  * The main class that implements provider specific actions.
@@ -77,7 +77,10 @@ export class VectorDBProvider extends BaseVectorDBProvider {
     throw new Error("Method not implemented.");
   }
 
-  async create(agreement: Agreement, offer: DbOffer): Promise<VectorDBDetails> {
+  async create(
+    agreement: Agreement,
+    offer: OfferDetails
+  ): Promise<VectorDBDetails> {
     /**
      * TODO: Implement how the resource will be created.
      */

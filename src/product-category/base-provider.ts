@@ -6,11 +6,11 @@ import {
   validateBodyOrParams,
 } from "@forest-protocols/sdk";
 import { AbstractProvider } from "@/abstract/AbstractProvider";
-import { ResourceDetails } from "@/types";
-import { Resource } from "@/database/schema";
-import { LocalStorage } from "@/database/LocalStorage";
-import { NotFound } from "@/errors/NotFound";
+import { Resource, ResourceDetails } from "@/types";
 import { z } from "zod";
+import { Address } from "viem";
+import { DB } from "@/database/Database";
+import { PipeErrorNotFound } from "@/errors/pipe/PipeErrorNotFound";
 
 /**
  * The details gathered by the provider from the resource source.
@@ -168,61 +168,50 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
     await super.init(providerTag);
 
     /**
-     * Validates the request body according to the given Zod schema.
-     */
-    const validateBody = <T>(body: any, schema: z.Schema<T>) => {
-      const bodyValidation = schema.safeParse(body);
-      if (bodyValidation.error) {
-        throw new PipeError(PipeResponseCode.BAD_REQUEST, {
-          message: "Validation error",
-          body: bodyValidation.error.issues,
-        });
-      }
-
-      return bodyValidation.data;
-    };
-
-    /**
-     * Retrieves resource details from local storage and blockchain
-     * and checks the existence of the resource.
+     * Retrieves resource and agreement from database and blockchain.
+     * Simply checks the existence and ownership of the resource.
      */
     const getResourceDetails = async (
       agreementId: number,
-      requester: string
+      requester: string,
+      pcAddress: Address
     ) => {
-      const resource = await LocalStorage.instance.getResource(
-        agreementId,
-        requester
-      );
+      const resource = await DB.getResource(agreementId, requester, pcAddress);
 
       if (!resource || !resource.isActive) {
-        throw new NotFound("Resource");
+        throw new PipeErrorNotFound("Resource");
       }
 
-      const agreement = await this.marketplace.getAgreement(agreementId);
+      const pcClient = this.productCategories[pcAddress];
+      const agreement = await pcClient.getAgreement(agreementId);
 
       return { resource, agreement };
     };
 
     /**
-     * Creates a new collection
-     * method: POST
-     * path: /collection
-     * body:
-     *  id: number -> ID of the resource.
-     *  name: string -> Name of the collection.
-     *  fields: Array<Field> -> Fields/columns of the collection.
+     * Creates a new collection.
      */
-    this.pipe!.route(PipeMethod.POST, "/collection", async (req) => {
-      const bodySchema = z.object({
-        id: z.number(),
-        name: z.string(),
-        fields: z.array(fieldSchema).min(1),
-      });
-      const body = validateBody(req.body, bodySchema);
+    this.pipe.route(PipeMethod.POST, "/collection", async (req) => {
+      const body = validateBodyOrParams(
+        req.body,
+        z.object({
+          /** ID of the resource. */
+          id: z.number(),
+
+          /** Product category address. */
+          pc: addressSchema,
+
+          /** Name of the collection. */
+          name: z.string(),
+
+          /** Fields/columns of the collection. */
+          fields: z.array(fieldSchema).min(1),
+        })
+      );
       const { resource, agreement } = await getResourceDetails(
         body.id,
-        req.requester
+        req.requester,
+        body.pc as Address
       );
 
       await this.createCollection(agreement, resource, body.name, body.fields);
@@ -233,22 +222,26 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
     });
 
     /**
-     * Deletes a collection
-     * method: DELETE
-     * path: /collection
-     * body:
-     *  id: number -> ID of the resource.
-     *  name: string -> Name of the collection.
+     * Deletes a collection.
      */
-    this.pipe!.route(PipeMethod.DELETE, "/collection", async (req) => {
-      const bodySchema = z.object({
-        id: z.number(),
-        name: z.string(),
-      });
-      const body = validateBody(req.body, bodySchema);
+    this.pipe.route(PipeMethod.DELETE, "/collection", async (req) => {
+      const body = validateBodyOrParams(
+        req.body,
+        z.object({
+          /** ID of the resource. */
+          id: z.number(),
+
+          /** Product category address. */
+          pc: addressSchema,
+
+          /** Name of the collection. */
+          name: z.string(),
+        })
+      );
       const { resource, agreement } = await getResourceDetails(
         body.id,
-        req.requester
+        req.requester,
+        body.pc as Address
       );
 
       await this.deleteCollection(agreement, resource, body.name);
@@ -260,35 +253,42 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
 
     /**
      * Gets the nearest neighbors for the given embeddings.
-     * method: POST
-     * path: /search
-     * body:
-     *  id: number -> ID of the resource.
-     *  collection: string -> Name of the collection.
-     *  vectorField: string -> Name of the vector column.
-     *  embeddings: any[] -> Embeddings to be searched.
-     *  options?: {
-     *    limit?: number -> Total result count.
-     *    metricType?: MetricType -> Metric type of the distance calculation.
-     *  } -> Additional options.
      */
-    this.pipe!.route(PipeMethod.POST, "/search", async (req) => {
-      const bodySchema = z.object({
-        id: z.number(),
-        collection: z.string(),
-        vectorField: z.string(),
-        embeddings: z.array(z.any()).min(1),
-        options: z
-          .object({
-            limit: z.number().optional(),
-            metricType: metricTypeSchema.optional(),
-          })
-          .optional(),
-      });
-      const body = validateBody(req.body, bodySchema);
+    this.pipe.route(PipeMethod.POST, "/search", async (req) => {
+      const body = validateBodyOrParams(
+        req.body,
+        z.object({
+          /** ID of the resource. */
+          id: z.number(),
+
+          /** Product category address. */
+          pc: addressSchema,
+
+          /** Name of the collection. */
+          collection: z.string(),
+
+          /** Name of the vector column. */
+          vectorField: z.string(),
+
+          /** Embeddings to be searched. */
+          embeddings: z.array(z.any()).min(1),
+
+          /** Additional options. */
+          options: z
+            .object({
+              /** Total result count. */
+              limit: z.number().optional(),
+
+              /** Metric type of the distance calculation. */
+              metricType: metricTypeSchema.optional(),
+            })
+            .optional(),
+        })
+      );
       const { resource, agreement } = await getResourceDetails(
         body.id,
-        req.requester
+        req.requester,
+        body.pc as Address
       );
 
       const result = await this.search(
@@ -307,24 +307,29 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
     });
 
     /**
-     * Insert data into a collection
-     * method: POST
-     * path: /data
-     * body:
-     *  id: number -> ID of the resource.
-     *  collection: string -> Name of the collection.
-     *  data: { [field: string]: any }[] -> Data to be inserted.
+     * Insert data into a collection.
      */
-    this.pipe!.route(PipeMethod.POST, "/data", async (req) => {
-      const bodySchema = z.object({
-        id: z.number(),
-        collection: z.string(),
-        data: z.array(z.record(z.string(), z.any())).min(1),
-      });
-      const body = validateBody(req.body, bodySchema);
+    this.pipe.route(PipeMethod.POST, "/data", async (req) => {
+      const body = validateBodyOrParams(
+        req.body,
+        z.object({
+          /** ID of the resource. */
+          id: z.number(),
+
+          /** Product category address. */
+          pc: addressSchema,
+
+          /** Name of the collection. */
+          collection: z.string(),
+
+          /** Data to be inserted. */
+          data: z.array(z.record(z.string(), z.any())).min(1),
+        })
+      );
       const { resource, agreement } = await getResourceDetails(
         body.id,
-        req.requester
+        req.requester,
+        body.pc as Address
       );
 
       await this.insertData(agreement, resource, body.collection, body.data);
@@ -335,24 +340,29 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
     });
 
     /**
-     * Delete data from a collection
-     * method: DELETE
-     * path: /data
-     * body:
-     *  id: number -> ID of the resource.
-     *  collection: string -> Name of the collection.
-     *  conditions: { [key: string]: ConditionValue } -> Conditions for selecting the records that is going to be deleted.
+     * Delete data from a collection.
      */
     this.pipe!.route(PipeMethod.DELETE, "/data", async (req) => {
-      const bodySchema = z.object({
-        id: z.number(),
-        collection: z.string(),
-        conditions: z.record(z.string(), conditionValueSchema),
-      });
-      const body = validateBody(req.body, bodySchema);
+      const body = validateBodyOrParams(
+        req.body,
+        z.object({
+          /** ID of the resource. */
+          id: z.number(),
+
+          /** Product category address. */
+          pc: addressSchema,
+
+          /** Name of the collection. */
+          collection: z.string(),
+
+          /** Conditions for selecting the records that is going to be deleted. */
+          conditions: z.record(z.string(), conditionValueSchema),
+        })
+      );
       const { resource, agreement } = await getResourceDetails(
         body.id,
-        req.requester
+        req.requester,
+        body.pc as Address
       );
 
       await this.deleteData(

@@ -11,7 +11,6 @@ import { logger } from "./logger";
 import { rpcClient } from "./clients";
 import { AbstractProvider } from "./abstract/AbstractProvider";
 import * as ansis from "ansis";
-import { MainProviderImplementation } from "./product-category/provider";
 import {
   adjectives,
   animals,
