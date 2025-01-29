@@ -84,7 +84,7 @@ src/index.ts
 ```typescript
 class Program {
   providers = {
-    main: new PostgreSQLDatabaseProvider(), // If your provider class defined in another name, update here
+    main: new VectorDBProvider(), // If your provider class defined in another name, update here
   };
 ....
 ```
@@ -113,7 +113,7 @@ classDiagram
 
 	class BaseVectorDBProvider {
 		<<abstract class>>
-		+search(agreement: Agreement, resource: Resource, collection: string, vectorField: string, embeddings: any[], options?: { limit?: number, metricType?: MetricType })* Promise~any[]~
+		+search(agreement: Agreement, resource: Resource, collection: string, vectorField: string, embeddings: any[], options(optional): { limit(optional): number, metricType(optional): MetricType })* Promise~any[]~
 		+insertData(agreement: Agreement, resource: Resource, collection: string, data: { [field: string]: any })* Promise~void~
 		+deleteData(agreement: Agreement, resource: Resource, collection: string, conditions: { [field: string]: ConditionValue })* Promise~void~
 		+createCollection(agreement: Agreement, resource: Resource, name: string, fields: Field[])* Promise~void~
@@ -122,8 +122,8 @@ classDiagram
 
 	class AbstractProvider~DetailsType=ResourceDetails~ {
 		<<abstract class>>
-		account?: Account
-		pipe?: XMTPPipe
+		account(optional): Account
+		pipe(optional): XMTPPipe
 		marketplace: Marketplace
 
 		+init(providerTag: string) void
@@ -135,7 +135,7 @@ classDiagram
 	class ResourceDetails {
 		<<type or interface>>
 		status: DeploymentStatus
-		name?: string
+		name(optional): string
 		[fieldName: string]: any
 	}
 
