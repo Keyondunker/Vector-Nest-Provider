@@ -1,51 +1,56 @@
-# Machine Translation
+# Vector Storage
 
 ## Description
 
-This product category aims to offer high quality translations from different languages pairs
+This product category aims to create a competition between different Vector Database solutions such as Milvus, pgvector, Chroma etc.
 
 ## Basic Info
 
-|                               |                                   |
-| ----------------------------- | --------------------------------- |
-| Software Stack / Service Type | `Machine Translation`             |
-| Software Version (optional)   | `N/A`                             |
-| PC Smart Contract Address     | `{SC Address}`                    |
-| PC Registration Date          | `{Date of Registration}`          |
-| PC Owner Website              | [link](https://{domain}/)         |
-| PC Owner Contact Info         | [e-mail](mailto:owner@domain.com) |
-| PC Owner Wallet Address       | `{Wallet Address}`                |
+|                               |                                                                 |
+| ----------------------------- | --------------------------------------------------------------- |
+| Software Stack / Service Type | `Vector Storage`                                                |
+| Software Version (optional)   | `N/A`                                                           |
+| PC Smart Contract Address     | `0x61b9D923744013c28DAd1F7855c812A676D9Ba7A`                    |
+| PC Registration Date          | `29 January 2025`                                               |
+| PC Owner Website              | `N/A`                                                           |
+| PC Owner Contact Info         | `N/A`                                                           |
+| PC Owner Wallet Address       | `0x765765F597222b524F0412a143094E118ddAB5Fd`                    |
+| PC Owner Details File CID     | `bagaaierageowudmpux2tmq4occ7m3zg5vpwjxpbfbkkwbrgvzwrquep5fzmq` |
 
 ## Offer Specification
 
 Each Offer in this Product Category must include the following properties:
 |Name|Units|Description|
 |-|-|-|
-|API Version (optional)|`[v1, v2, v3]`|The version of the API requested by the client|
-|API Key (optional)|`[services generated API key]`|The version of the API requested by the client|
-|Region (optional, service endpoints)|`[Global(default), Americas, Asia Pacific, Europe eth.]`|The region from where the machine translation server will send translated text back.|
+|CPU|`Cores`|CPU core count|
+|RAM|`GB`|Total usable RAM amount in GB|
+|Disk Type|`["SSD", "HDD", "M2"]`|Disk type|
+|Disk Size|`GB`|Total usable disk size|
+|Virtualization|`["VM", "Container"]`|Virtualization technology|
+|CPU Architecture|`["x86", "ARM"]`|CPU architecture|
+|Isolation|`["Shared", "Dedicated"]`|CPU core count|
 
 ## Configuration Parameters [TODO]
 
 This Product Category has the following configuration. These are enforced by the logic of the on-chain smart contract.
-| | |  
-|----------------|-------------------------------|
-|Maximum Number of Validators|`{maxNumValidators}`|
-|Maximum Number of Providers|`{maxNumProviders}`|
-|Validator Registration Fee|`{valRegistrationFee}` FOREST tokens|
-|Provider Registration Fee|`{provRegistrationFee}` FOREST tokens|
-|Resource Registration Fee|`{resourceRegistrationFee}` FOREST tokens|
-|Update Delay for Terms Change|`{termsUpdateDelay}` blocks|
-|Validators Share of Emissions|`{rewardsSplit_validators}` %|
-|Providers Share of Emissions|`{rewardsSplit_providers}` %|
-|PC Owner Share of Emissions|`{rewardsSplit_pcOwner}` %|
-|Performance Optimization Weight |`{opWeight_performance}`%|
-|Price Optimization Weight|`{opWeight_price}`%|
-|Price-to-Performance Optimization Weight|`{opWeight_ptp}`%|
-|Popularity Optimization Weight|`{opWeight_popularity}`%|
-|Hash of the Details File|`{CID}`|
+|Config|Value|Enforced by|  
+|----------------|-------------------------------|---|
+|Maximum Number of Validators|`2`|Smart Contract|
+|Maximum Number of Providers|`5`|Smart Contract|
+|Validator Registration Fee|`1` FOREST tokens|Smart Contract|
+|Provider Registration Fee|`2` FOREST tokens|Smart Contract|
+|Offer Registration Fee|`3` FOREST tokens|Smart Contract|
+|Update Delay for Terms Change|`300` blocks|Smart Contract|
+|Validators Share of Emissions|`55%`|Smart Contract|
+|Providers Share of Emissions|`35%`|Smart Contract|
+|PC Owner Share of Emissions|`10%`|Smart Contract|
+|CID of the Details File|`bagaaieralyeoeb4om3buogatsa22vu45ydaa2ahm7a7bfv57twzvibbe22qq`|Smart Contract|
+|Performance Optimization Weight |`60%`|Validator|
+|Price Optimization Weight|`10%`|Validator|
+|Price-to-Performance Optimization Weight|`20%`|Validator|
+|Popularity Optimization Weight|`10%`|Validator|
 
-You can always double-check the on-chain values e.g. [here](https://etherscan.io/address/{SC Address}#readContract)
+You can always double-check the on-chain values e.g. [here](https://sepolia-optimism.etherscan.io/address/0x61b9D923744013c28DAd1F7855c812A676D9Ba7A#readContract)
 
 ## Tests and Quality Thresholds [TODO]
 
@@ -71,40 +76,58 @@ More in-depth descriptions of the Tests:
 
 In order to start providing services for this Product Category you need to:
 
-1. Create a Provider class that inherits from `BaseMachineTranslationProvider` and implement all of the abstract methods (take a look at the diagram below for more information).
-2. Enable that Provider class by adding it inside `providers` object inside `src/index.ts` (by default only one provider enabled in the daemon, named `main`)
-3. Define information about the Provider inside `data/providers.json`. You can refer to `data/providers.json.example`.
-4. Install Forest Protocols CLI by following these instructions: [link](https://github.com/forest-protocols/cli....)
-5. Using the CLI register in the Protocol as a Provider:
+1. Create a Provider class that inherits from `BaseVectorDBProvider` and implement all of the abstract methods (take a look at the diagram below for more information).
+2. Enable that Provider class by adding it inside the `providers` object in `src/index.ts`:
+
+src/index.ts
+
+```typescript
+class Program {
+  providers = {
+    main: new PostgreSQLDatabaseProvider(), // If your provider class defined in another name, update here
+  };
+....
+```
+
+3. Install Forest Protocols CLI by following these instructions: [link](https://github.com/Forest-Protocols/forest-cli)
+4. Register in the protocol as a provider:
    - `TODO: Write related CLI commands`
-6. Using the CLI register in this Product Category:
+5. Register in this product category as a provider:
    - `TODO: Write related CLI commands`
-7. Run the Provider daemon.
-8. Using the CLI register your offers on-chain and Provider's database:
+6. Register your offers for this provider:
    - `TODO: Write related CLI commands`
+7. Put the provider details that you've got from registration process to `data/providers.json`. You can refer to `data/providers.example.jsonc` file.
+8. Put the offer details inside `data/offers` directory. If you want you can create sub directories as well. You can refer to `data/offers/offer.example.jsonc` file.
+9. Edit `.env` file.
+10. Run the Provider daemon.
 
 #### Provider Class Hierarchy
 
-Your Provider class must inherit from this Product Category's base Provider class, `BasePostgreSQLDatabaseProvider`. This class design unifies the way all Providers, Users and Validators communicate.
+Your Provider class must inherit from this Product Category's base Provider class, `BaseVectorDBProvider`. This class design unifies the way all Providers, Users and Validators communicate.
 
 ```mermaid
 classDiagram
 	class YourProvider {
 
 	}
-	class BaseMachineTranslationProvider   {
+
+	class BaseVectorDBProvider {
 		<<abstract class>>
-		+sqlQuery(Agreement agreement, Resource resource, string query)* Promise~PostgreSQLDatabaseDetails~
-		+resetCredentials(Agreement agreement, Resource resource)* Promise~PostgreSQLDatabaseDetails~
+		+search(agreement: Agreement, resource: Resource, collection: string, vectorField: string, embeddings: any[], options?: { limit?: number, metricType?: MetricType })* Promise~any[]~
+		+insertData(agreement: Agreement, resource: Resource, collection: string, data: { [field: string]: any })* Promise~void~
+		+deleteData(agreement: Agreement, resource: Resource, collection: string, conditions: { [field: string]: ConditionValue })* Promise~void~
+		+createCollection(agreement: Agreement, resource: Resource, name: string, fields: Field[])* Promise~void~
+		+deleteCollection(agreement: Agreement, resource: Resource, name: string)* Promise~void~
 	}
-	class  AbstractProvider~DetailsType=ResourceDetails~  {
+
+	class AbstractProvider~DetailsType=ResourceDetails~ {
 		<<abstract class>>
 		account?: Account
 		pipe?: XMTPPipe
 		marketplace: Marketplace
 
 		+init(providerTag: string) void
-		+create(agreement: Agreement, offer: DbOffer)* Promise~DetailsType~
+		+create(agreement: Agreement, offer: OfferDetails)* Promise~DetailsType~
 		+getDetails(agreement: Agreement, resource: Resource)* Promise~DetailsType~
 		+delete(agreement: Agreement, resource: Resource)* Promise~DetailsType~
 	}
@@ -112,16 +135,18 @@ classDiagram
 	class ResourceDetails {
 		<<type or interface>>
 		status: DeploymentStatus
+		name?: string
 		[fieldName: string]: any
 	}
 
-	class MachineTranslationDetails {
+	class VectorDBDetails {
 		<<type or interface>>
+		_credentials: any;
 	}
 
-		BaseMachineTranslationProvider  <|--  AbstractProvider~MachineTranslationDetails~  :  inherits
-	YourProvider  <|-- BaseMachineTranslationProvider  : inherits and implements abstract methods
-	MachineTranslationDetails  <|-- ResourceDetails : extends
+	BaseVectorDBProvider <|-- AbstractProvider~VectorDBDetails~ : inherits
+	YourProvider <|-- BaseVectorDBProvider : inherits and implements abstract methods
+	VectorDBDetails <|-- ResourceDetails : extends
 ```
 
 ## Become a Validator [TODO]
