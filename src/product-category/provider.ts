@@ -3,7 +3,7 @@ import {
   BaseExampleProductProvider,
   ExampleProductDetails,
 } from "./base-provider";
-import { Resource, OfferDetails } from "@/types";
+import { DbOffer, Resource } from "@/types";
 
 /**
  * The main class that implements provider specific actions.
@@ -31,7 +31,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 
   async create(
     agreement: Agreement,
-    offer: OfferDetails
+    offer: DbOffer
   ): Promise<ExampleProductDetails> {
     /**
      * TODO: Implement how the resource will be created.
