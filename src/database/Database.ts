@@ -90,6 +90,10 @@ class Database {
     );
   }
 
+  async getAllOffers() {
+    return await this.offerQuery();
+  }
+
   /**
    * Retrieves details of a resource.
    * @param id
@@ -145,7 +149,6 @@ class Database {
         productCategory: schema.productCategoriesTable,
       })
       .from(schema.resourcesTable)
-
       .innerJoin(
         schema.offersTable,
         and(
@@ -156,6 +159,26 @@ class Database {
       .innerJoin(
         schema.providersTable,
         eq(schema.resourcesTable.providerId, schema.providersTable.id)
+      )
+      .innerJoin(
+        schema.productCategoriesTable,
+        eq(schema.offersTable.pcAddressId, schema.productCategoriesTable.id)
+      )
+      .$dynamic();
+  }
+
+  offerQuery() {
+    return this.client
+      .select({
+        id: schema.offersTable.id,
+        deploymentParams: schema.offersTable.deploymentParams,
+        details: schema.offersTable.details,
+        productCategory: sql<Address>`${schema.productCategoriesTable.address}`,
+      })
+      .from(schema.offersTable)
+      .innerJoin(
+        schema.providersTable,
+        eq(schema.offersTable.providerId, schema.providersTable.id)
       )
       .innerJoin(
         schema.productCategoriesTable,
@@ -180,35 +203,19 @@ class Database {
     providerIdOrAddress: number | Address,
     pcAddress?: Address
   ): Promise<DbOffer[]> {
-    const offers = await this.client
-      .select({
-        id: schema.offersTable.id,
-        deploymentParams: schema.offersTable.deploymentParams,
-        details: schema.offersTable.details,
-        productCategory: sql<Address>`${schema.productCategoriesTable.address}`,
-      })
-      .from(schema.offersTable)
-      .innerJoin(
-        schema.providersTable,
-        eq(schema.offersTable.providerId, schema.providersTable.id)
+    const offers = await this.offerQuery().where(
+      and(
+        typeof providerIdOrAddress === "string"
+          ? eq(
+              schema.providersTable.ownerAddress,
+              providerIdOrAddress.toLowerCase()
+            )
+          : eq(schema.providersTable.id, providerIdOrAddress),
+        pcAddress
+          ? eq(schema.productCategoriesTable.address, pcAddress.toLowerCase())
+          : undefined
       )
-      .innerJoin(
-        schema.productCategoriesTable,
-        eq(schema.offersTable.pcAddressId, schema.productCategoriesTable.id)
-      )
-      .where(
-        and(
-          typeof providerIdOrAddress === "string"
-            ? eq(
-                schema.providersTable.ownerAddress,
-                providerIdOrAddress.toLowerCase()
-              )
-            : eq(schema.providersTable.id, providerIdOrAddress),
-          pcAddress
-            ? eq(schema.productCategoriesTable.address, pcAddress.toLowerCase())
-            : undefined
-        )
-      );
+    );
 
     return offers;
   }
