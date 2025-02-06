@@ -19,7 +19,7 @@ export type DatabaseClientType = NodePgDatabase<typeof schema>;
  * Database of this provider daemon
  */
 class Database {
-  client: DatabaseClientType | undefined;
+  client: DatabaseClientType;
   logger = logger.child({ context: "Database" });
 
   constructor() {
@@ -36,8 +36,7 @@ class Database {
    * Creates a new resource record.
    */
   async createResource(values: schema.DbResourceInsert) {
-    this.checkClient();
-    await this.client!.insert(schema.resourcesTable).values(values);
+    await this.client.insert(schema.resourcesTable).values(values);
   }
 
   /**
@@ -54,7 +53,6 @@ class Database {
       isActive?: boolean;
     }
   ) {
-    this.checkClient();
     const pc = await this.getProductCategory(pcAddress);
 
     if (!pc) {
@@ -64,7 +62,8 @@ class Database {
       return;
     }
 
-    await this.client!.update(schema.resourcesTable)
+    await this.client
+      .update(schema.resourcesTable)
       .set(values)
       .where(
         and(
@@ -94,42 +93,19 @@ class Database {
     ownerAddress: string,
     pcAddress: Address
   ): Promise<Resource | undefined> {
-    this.checkClient();
     const pc = await this.getProductCategory(pcAddress);
 
     if (!pc) {
       return;
     }
 
-    const [resource] = await this.client!.select({
-      ...getTableColumns(schema.resourcesTable),
-      offer: schema.offersTable,
-      provider: schema.providersTable,
-      productCategory: schema.productCategoriesTable,
-    })
-      .from(schema.resourcesTable)
-      .where(
-        and(
-          eq(schema.resourcesTable.id, id),
-          eq(schema.resourcesTable.ownerAddress, ownerAddress),
-          eq(schema.resourcesTable.pcAddressId, pc.id)
-        )
+    const [resource] = await this.resourceQuery().where(
+      and(
+        eq(schema.resourcesTable.id, id),
+        eq(schema.resourcesTable.ownerAddress, ownerAddress),
+        eq(schema.resourcesTable.pcAddressId, pc.id)
       )
-      .innerJoin(
-        schema.offersTable,
-        and(
-          eq(schema.resourcesTable.offerId, schema.offersTable.id),
-          eq(schema.resourcesTable.pcAddressId, schema.offersTable.pcAddressId)
-        )
-      )
-      .innerJoin(
-        schema.providersTable,
-        eq(schema.resourcesTable.providerId, schema.providersTable.id)
-      )
-      .innerJoin(
-        schema.productCategoriesTable,
-        eq(schema.offersTable.pcAddressId, schema.productCategoriesTable.id)
-      );
+    );
 
     if (!resource) return;
 
@@ -154,11 +130,40 @@ class Database {
     };
   }
 
+  resourceQuery() {
+    return this.client
+      .select({
+        ...getTableColumns(schema.resourcesTable),
+        offer: schema.offersTable,
+        provider: schema.providersTable,
+        productCategory: schema.productCategoriesTable,
+      })
+      .from(schema.resourcesTable)
+
+      .innerJoin(
+        schema.offersTable,
+        and(
+          eq(schema.resourcesTable.offerId, schema.offersTable.id),
+          eq(schema.resourcesTable.pcAddressId, schema.offersTable.pcAddressId)
+        )
+      )
+      .innerJoin(
+        schema.providersTable,
+        eq(schema.resourcesTable.providerId, schema.providersTable.id)
+      )
+      .innerJoin(
+        schema.productCategoriesTable,
+        eq(schema.offersTable.pcAddressId, schema.productCategoriesTable.id)
+      )
+      .$dynamic();
+  }
+
   async getProductCategory(
     address: Address
   ): Promise<schema.DbProductCategory | undefined> {
     address = address.toLowerCase() as Address;
-    const [pc] = await this.client!.select()
+    const [pc] = await this.client
+      .select()
       .from(schema.productCategoriesTable)
       .where(eq(schema.productCategoriesTable.address, address));
 
@@ -169,14 +174,13 @@ class Database {
     providerIdOrAddress: number | Address,
     pcAddress?: Address
   ): Promise<DbOffer[]> {
-    this.checkClient();
-
-    const offers = await this.client!.select({
-      id: schema.offersTable.id,
-      deploymentParams: schema.offersTable.deploymentParams,
-      details: schema.offersTable.details,
-      productCategory: sql<Address>`${schema.productCategoriesTable.address}`,
-    })
+    const offers = await this.client
+      .select({
+        id: schema.offersTable.id,
+        deploymentParams: schema.offersTable.deploymentParams,
+        details: schema.offersTable.details,
+        productCategory: sql<Address>`${schema.productCategoriesTable.address}`,
+      })
       .from(schema.offersTable)
       .innerJoin(
         schema.providersTable,
@@ -204,14 +208,14 @@ class Database {
   }
 
   async getOffer(id: number, pcAddress: Address): Promise<DbOffer | undefined> {
-    this.checkClient();
     const pc = await this.getProductCategory(pcAddress);
 
     if (!pc) {
       return;
     }
 
-    const [offer] = await this.client!.select()
+    const [offer] = await this.client
+      .select()
       .from(schema.offersTable)
       .where(
         and(
@@ -234,8 +238,8 @@ class Database {
   async getProviderDetails(
     providerIdOrAddress: Address | number
   ): Promise<ProviderDetails | undefined> {
-    this.checkClient();
-    const [result] = await this.client!.select()
+    const [result] = await this.client
+      .select()
       .from(schema.providersTable)
       .where(
         typeof providerIdOrAddress === "string"
@@ -257,8 +261,8 @@ class Database {
    * Returns the latest processed block height for a provider.
    */
   async getLatestProcessedBlockHeight(): Promise<bigint | undefined> {
-    this.checkClient();
-    const [lastBlock] = await this.client!.select()
+    const [lastBlock] = await this.client
+      .select()
       .from(schema.blockchainTxsTable)
       .orderBy(desc(schema.blockchainTxsTable.height))
       .limit(1);
@@ -267,8 +271,8 @@ class Database {
   }
 
   async getProvider(ownerAddress: string) {
-    this.checkClient();
-    const [provider] = await this.client!.select()
+    const [provider] = await this.client
+      .select()
       .from(schema.providersTable)
       .where(eq(schema.providersTable.ownerAddress, ownerAddress));
 
@@ -285,8 +289,8 @@ class Database {
    * @param hash
    */
   async getTransaction(blockHeight: bigint, hash: string) {
-    this.checkClient();
-    const [tx] = await this.client!.select()
+    const [tx] = await this.client
+      .select()
       .from(schema.blockchainTxsTable)
       .where(
         and(
@@ -303,8 +307,7 @@ class Database {
    * @param blockHeight
    */
   async saveTxAsProcessed(blockHeight: bigint, hash: string) {
-    this.checkClient();
-    await this.client!.transaction(async (tx) => {
+    await this.client.transaction(async (tx) => {
       const [transaction] = await tx
         .select()
         .from(schema.blockchainTxsTable)
@@ -326,9 +329,8 @@ class Database {
   }
 
   async saveProvider(id: number, details: any, ownerAddress: Address) {
-    this.checkClient();
     ownerAddress = ownerAddress.toLowerCase() as Address;
-    await this.client!.transaction(async (tx) => {
+    await this.client.transaction(async (tx) => {
       const [existingProvider] = await tx
         .select()
         .from(schema.providersTable)
@@ -358,9 +360,8 @@ class Database {
     deploymentParams: any,
     details: any
   ) {
-    this.checkClient();
     pcAddress = pcAddress.toLowerCase() as Address;
-    await this.client!.transaction(async (tx) => {
+    await this.client.transaction(async (tx) => {
       const [pc] = await tx
         .select()
         .from(schema.productCategoriesTable)
@@ -402,9 +403,8 @@ class Database {
    * @param address Smart contract address of the product category.
    */
   async saveProductCategory(address: Address, details: any) {
-    this.checkClient();
     address = address.toLowerCase() as Address;
-    await this.client!.transaction(async (tx) => {
+    await this.client.transaction(async (tx) => {
       const [existingPc] = await tx
         .select()
         .from(schema.productCategoriesTable)
@@ -419,15 +419,6 @@ class Database {
         address,
       });
     });
-  }
-
-  /**
-   * Checks if the client is initialized or not
-   */
-  private checkClient() {
-    if (!this.client) {
-      throw new NotInitialized("Local storage client");
-    }
   }
 }
 
