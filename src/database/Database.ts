@@ -84,6 +84,12 @@ class Database {
     });
   }
 
+  async getAllResourcesOfUser(ownerAddress: Address) {
+    return await this.resourceQuery().where(
+      and(eq(schema.resourcesTable.ownerAddress, ownerAddress))
+    );
+  }
+
   /**
    * Retrieves details of a resource.
    * @param id
