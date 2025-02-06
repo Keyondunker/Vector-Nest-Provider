@@ -1,10 +1,14 @@
 import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
 import { config } from "@/config";
-import { DeploymentStatus, NotInitialized } from "@forest-protocols/sdk";
+import {
+  DeploymentStatus,
+  NotInitialized,
+  ProviderDetails,
+} from "@forest-protocols/sdk";
 import { and, desc, eq, getTableColumns, sql } from "drizzle-orm";
 import { PipeErrorNotFound } from "@/errors/pipe/PipeErrorNotFound";
 import { Address } from "viem/accounts";
-import { OfferDetails, Resource } from "@/types";
+import { DbOffer, Resource } from "@/types";
 import { logger } from "@/logger";
 import * as schema from "./schema";
 import pg from "pg";
@@ -162,15 +166,16 @@ class Database {
   }
 
   async getAllOffersOfProvider(
-    providerOwnerAddress: Address
-  ): Promise<OfferDetails[]> {
+    providerIdOrAddress: number | Address,
+    pcAddress?: Address
+  ): Promise<DbOffer[]> {
     this.checkClient();
 
     const offers = await this.client!.select({
       id: schema.offersTable.id,
-      productCategory: sql<Address>`${schema.productCategoriesTable.address}`,
-      details: schema.offersTable.details,
       deploymentParams: schema.offersTable.deploymentParams,
+      details: schema.offersTable.details,
+      productCategory: sql<Address>`${schema.productCategoriesTable.address}`,
     })
       .from(schema.offersTable)
       .innerJoin(
@@ -183,20 +188,22 @@ class Database {
       )
       .where(
         and(
-          eq(
-            schema.providersTable.ownerAddress,
-            providerOwnerAddress.toLowerCase()
-          )
+          typeof providerIdOrAddress === "string"
+            ? eq(
+                schema.providersTable.ownerAddress,
+                providerIdOrAddress.toLowerCase()
+              )
+            : eq(schema.providersTable.id, providerIdOrAddress),
+          pcAddress
+            ? eq(schema.productCategoriesTable.address, pcAddress.toLowerCase())
+            : undefined
         )
       );
 
     return offers;
   }
 
-  async getOffer(
-    id: number,
-    pcAddress: Address
-  ): Promise<OfferDetails | undefined> {
+  async getOffer(id: number, pcAddress: Address): Promise<DbOffer | undefined> {
     this.checkClient();
     const pc = await this.getProductCategory(pcAddress);
 
@@ -224,14 +231,23 @@ class Database {
   /**
    * Retrieve all of the details about the provider itself
    */
-  async getProviderDetails(ownerAddress: string) {
+  async getProviderDetails(
+    providerIdOrAddress: Address | number
+  ): Promise<ProviderDetails | undefined> {
     this.checkClient();
     const [result] = await this.client!.select()
       .from(schema.providersTable)
-      .where(eq(schema.providersTable.ownerAddress, ownerAddress));
+      .where(
+        typeof providerIdOrAddress === "string"
+          ? eq(
+              schema.providersTable.ownerAddress,
+              providerIdOrAddress.toLowerCase()
+            )
+          : eq(schema.providersTable.id, providerIdOrAddress)
+      );
 
     if (!result) {
-      return {};
+      return;
     }
 
     return result.details;
