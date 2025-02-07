@@ -90,8 +90,14 @@ class Database {
     );
   }
 
-  async getAllOffers() {
-    return await this.offerQuery();
+  async getAllOffers(pcAddress?: Address) {
+    return await this.offerQuery().where(
+      and(
+        pcAddress
+          ? eq(schema.productCategoriesTable.address, pcAddress.toLowerCase())
+          : undefined
+      )
+    );
   }
 
   /**
@@ -187,16 +193,39 @@ class Database {
       .$dynamic();
   }
 
+  /**
+   * Gets one product category info stored in the database.
+   */
   async getProductCategory(
     address: Address
-  ): Promise<schema.DbProductCategory | undefined> {
-    address = address.toLowerCase() as Address;
-    const [pc] = await this.client
+  ): Promise<schema.DbProductCategory | undefined>;
+  /**
+   * Gets all product categories in the database
+   * @param address
+   */
+  async getProductCategory(
+    address?: Address
+  ): Promise<schema.DbProductCategory[]>;
+  async getProductCategory(
+    address?: Address
+  ): Promise<
+    schema.DbProductCategory | schema.DbProductCategory[] | undefined
+  > {
+    const pcs = await this.client
       .select()
       .from(schema.productCategoriesTable)
-      .where(eq(schema.productCategoriesTable.address, address));
+      .where(
+        and(
+          address !== undefined
+            ? eq(schema.productCategoriesTable.address, address?.toLowerCase())
+            : undefined
+        )
+      );
 
-    return pc;
+    if (address) {
+      return pcs[0];
+    }
+    pcs;
   }
 
   async getAllOffersOfProvider(
