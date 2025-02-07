@@ -26,7 +26,7 @@ import {
   Registry,
   XMTPPipe,
 } from "@forest-protocols/sdk";
-import { red } from "ansis";
+import { red, yellow } from "ansis";
 import { Account, Address } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { z } from "zod";
@@ -159,6 +159,12 @@ export abstract class AbstractProvider<
 
       // Revert back console.info
       console.info = consoleInfo;
+
+      logger.info(
+        `Initialized Pipe for operator ${yellow.bold(
+          this.actorInfo.operatorAddr
+        )}`
+      );
 
       // Setup operator specific endpoints
 
