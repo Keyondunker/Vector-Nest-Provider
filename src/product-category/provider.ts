@@ -6,7 +6,7 @@ import {
   MetricType,
   VectorDBDetails,
 } from "./base-provider";
-import { OfferDetails, Resource } from "@/types";
+import { DbOffer, Resource } from "@/types";
 
 /**
  * The main class that implements provider specific actions.
@@ -77,10 +77,7 @@ export class VectorDBProvider extends BaseVectorDBProvider {
     throw new Error("Method not implemented.");
   }
 
-  async create(
-    agreement: Agreement,
-    offer: OfferDetails
-  ): Promise<VectorDBDetails> {
+  async create(agreement: Agreement, offer: DbOffer): Promise<VectorDBDetails> {
     /**
      * TODO: Implement how the resource will be created.
      */

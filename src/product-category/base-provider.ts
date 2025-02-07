@@ -168,30 +168,9 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
     await super.init(providerTag);
 
     /**
-     * Retrieves resource and agreement from database and blockchain.
-     * Simply checks the existence and ownership of the resource.
-     */
-    const getResourceDetails = async (
-      agreementId: number,
-      requester: string,
-      pcAddress: Address
-    ) => {
-      const resource = await DB.getResource(agreementId, requester, pcAddress);
-
-      if (!resource || !resource.isActive) {
-        throw new PipeErrorNotFound("Resource");
-      }
-
-      const pcClient = this.productCategories[pcAddress];
-      const agreement = await pcClient.getAgreement(agreementId);
-
-      return { resource, agreement };
-    };
-
-    /**
      * Creates a new collection.
      */
-    this.pipe.route(PipeMethod.POST, "/collection", async (req) => {
+    this.route(PipeMethod.POST, "/collection", async (req) => {
       const body = validateBodyOrParams(
         req.body,
         z.object({
@@ -208,10 +187,10 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
           fields: z.array(fieldSchema).min(1),
         })
       );
-      const { resource, agreement } = await getResourceDetails(
+      const { resource, agreement } = await this.getResource(
         body.id,
-        req.requester,
-        body.pc as Address
+        body.pc as Address,
+        req.requester
       );
 
       await this.createCollection(agreement, resource, body.name, body.fields);
@@ -224,7 +203,7 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
     /**
      * Deletes a collection.
      */
-    this.pipe.route(PipeMethod.DELETE, "/collection", async (req) => {
+    this.route(PipeMethod.DELETE, "/collection", async (req) => {
       const body = validateBodyOrParams(
         req.body,
         z.object({
@@ -238,10 +217,10 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
           name: z.string(),
         })
       );
-      const { resource, agreement } = await getResourceDetails(
+      const { resource, agreement } = await this.getResource(
         body.id,
-        req.requester,
-        body.pc as Address
+        body.pc as Address,
+        req.requester
       );
 
       await this.deleteCollection(agreement, resource, body.name);
@@ -254,7 +233,7 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
     /**
      * Gets the nearest neighbors for the given embeddings.
      */
-    this.pipe.route(PipeMethod.POST, "/search", async (req) => {
+    this.route(PipeMethod.POST, "/search", async (req) => {
       const body = validateBodyOrParams(
         req.body,
         z.object({
@@ -285,10 +264,10 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
             .optional(),
         })
       );
-      const { resource, agreement } = await getResourceDetails(
+      const { resource, agreement } = await this.getResource(
         body.id,
-        req.requester,
-        body.pc as Address
+        body.pc as Address,
+        req.requester
       );
 
       const result = await this.search(
@@ -309,7 +288,7 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
     /**
      * Insert data into a collection.
      */
-    this.pipe.route(PipeMethod.POST, "/data", async (req) => {
+    this.route(PipeMethod.POST, "/data", async (req) => {
       const body = validateBodyOrParams(
         req.body,
         z.object({
@@ -326,10 +305,10 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
           data: z.array(z.record(z.string(), z.any())).min(1),
         })
       );
-      const { resource, agreement } = await getResourceDetails(
+      const { resource, agreement } = await this.getResource(
         body.id,
-        req.requester,
-        body.pc as Address
+        body.pc as Address,
+        req.requester
       );
 
       await this.insertData(agreement, resource, body.collection, body.data);
@@ -342,7 +321,7 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
     /**
      * Delete data from a collection.
      */
-    this.pipe!.route(PipeMethod.DELETE, "/data", async (req) => {
+    this.route(PipeMethod.DELETE, "/data", async (req) => {
       const body = validateBodyOrParams(
         req.body,
         z.object({
@@ -359,10 +338,10 @@ export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDeta
           conditions: z.record(z.string(), conditionValueSchema),
         })
       );
-      const { resource, agreement } = await getResourceDetails(
+      const { resource, agreement } = await this.getResource(
         body.id,
-        req.requester,
-        body.pc as Address
+        body.pc as Address,
+        req.requester
       );
 
       await this.deleteData(
