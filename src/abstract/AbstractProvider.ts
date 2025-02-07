@@ -171,14 +171,14 @@ export abstract class AbstractProvider<
       /**
        * Retrieves details of a product category
        */
-      this.operatorRoute(PipeMethod.GET, "/product-category", async (req) => {
+      this.operatorRoute(PipeMethod.GET, "/product-categories", async (req) => {
         const params = validateBodyOrParams(
           req.params,
           z.object({
             /**
              * Product category address
              */
-            pc: addressSchema,
+            pc: addressSchema.optional(),
           })
         );
 
@@ -301,10 +301,9 @@ export abstract class AbstractProvider<
           );
         } else {
           // Retrieve all offers exists in this daemon
-          offers = await DB.getAllOffers();
+          // or retrieve all offers from the given PC (if it is there)
+          offers = await DB.getAllOffers(params.pc as Address);
         }
-
-        // TODO: Feature to retrieve all offers from a PC
 
         return {
           code: PipeResponseCode.OK,
