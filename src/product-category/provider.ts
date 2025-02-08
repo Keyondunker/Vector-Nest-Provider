@@ -3,7 +3,7 @@ import {
   BaseExampleProductProvider,
   ExampleProductDetails,
 } from "./base-provider";
-import { DbOffer, Resource } from "@/types";
+import { DetailedOffer, Resource } from "@/types";
 
 /**
  * The main class that implements provider specific actions.
@@ -31,31 +31,41 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 
   async create(
     agreement: Agreement,
-    offer: DbOffer
+    offer: DetailedOffer
   ): Promise<ExampleProductDetails> {
     /**
      * TODO: Implement how the resource will be created.
      */
-    // If there is no additional action need for the deletion, you can
-    // just leave this method as empty.
+    // If there is no additional action need for creation, you can
+    // just leave this method as empty and return mandatory details:
+    /*  return {
+      status: DeploymentStatus.Running,
+      _examplePrivateDetailWontSentToUser: "fasfa",
+      Example_Detail: 42,
+    }; */
+
     throw new Error("Method not implemented.");
   }
 
   async getDetails(
     agreement: Agreement,
+    offer: DetailedOffer,
     resource: Resource
   ): Promise<ExampleProductDetails> {
     /**
      * TODO: Implement how the details retrieved from the resource source.
      */
-
-    // If there is no details, you can just return the existing details;
-    // return resource.details;
+    // If there is no details, you can just return the existing ones;
+    /* return {
+      ...resource.details,
+      status: resource.deploymentStatus,
+    }; */
     throw new Error("Method not implemented.");
   }
 
   async delete(
     agreement: Agreement,
+    offer: DetailedOffer,
     resource: Resource
   ): Promise<ExampleProductDetails> {
     /**
@@ -63,7 +73,11 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
      */
 
     // If there is no additional action need for the deletion, you can
-    // just leave this method as empty.
+    // just leave this method as empty and return following:
+    /* return {
+      ...resource.details,
+      status: resource.deploymentStatus,
+    }; */
     throw new Error("Method not implemented.");
   }
 }
