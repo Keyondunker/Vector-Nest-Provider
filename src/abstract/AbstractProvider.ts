@@ -81,6 +81,7 @@ export abstract class AbstractProvider<
       );
       process.exit(1);
     }
+    this.actorInfo = provider;
 
     await DB.upsertProvider(
       this.actorInfo.id,
@@ -93,7 +94,6 @@ export abstract class AbstractProvider<
 
     // `DB.upsertProvider` already checked the existence of the details file
     this.details = tryParseJSON(provDetailFile.content);
-    this.actorInfo = provider;
 
     const pcAddresses = await this.registry.getRegisteredPCsOfProvider(
       provider.id
