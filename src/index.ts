@@ -20,7 +20,7 @@ import {
   uniqueNamesGenerator,
 } from "unique-names-generator";
 import { join } from "path";
-import { readdirSync, readFileSync } from "fs";
+import { readdirSync, readFileSync, statSync } from "fs";
 import { tryParseJSON } from "./utils";
 
 async function sleep(ms: number) {
@@ -50,7 +50,12 @@ class Program {
     // Load detail files into the database
     logger.info("Detail files are loading to the database");
     const basePath = join(process.cwd(), "data/details");
-    const files = readdirSync(basePath, { recursive: true });
+    const files = readdirSync(basePath, { recursive: true }).filter((file) =>
+      // Exclude sub-directories
+      statSync(join(basePath, file.toString()), {
+        throwIfNoEntry: false,
+      })?.isFile()
+    );
     const contents = files.map((file) =>
       readFileSync(join(basePath, file.toString())).toString("utf-8")
     );
