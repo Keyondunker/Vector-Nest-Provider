@@ -4,8 +4,5 @@ node_modules
 !.env.*example
 dist
 data/providers.json
-data/details/**/*
-
-!data/details/**/*.gitkeep
 
 volumes
