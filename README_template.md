@@ -226,7 +226,7 @@ npm run db:migrate
 npm run start
 ```
 
-##### 5.2 Without a Container
+##### 5.2 With a Container
 
 If you prefer to use containers, build the container image and run it with Docker Compose. First, update the `DATABASE_URL` host to point to the database container:
 
