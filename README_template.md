@@ -23,6 +23,7 @@ This Product Category has the following configuration. Some of them are enforced
 | ---------------------------------------- | -------------------------- | -------------- |
 | Maximum Number of Validators             | `{Number}`                 | Smart Contract |
 | Maximum Number of Providers              | `{Number}`                 | Smart Contract |
+| Minimum Collateral                       | `{Amount of FOREST Token}` | Smart Contract |
 | Validator Registration Fee               | `{Amount of FOREST Token}` | Smart Contract |
 | Provider Registration Fee                | `{Amount of FOREST Token}` | Smart Contract |
 | Offer Registration Fee                   | `{Amount of FOREST Token}` | Smart Contract |
