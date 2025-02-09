@@ -40,7 +40,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
     // just leave this method as empty and return mandatory details:
     /*  return {
       status: DeploymentStatus.Running,
-      _examplePrivateDetailWontSentToUser: "fasfa",
+      _examplePrivateDetailWontSentToUser: "string data",
       Example_Detail: 42,
     }; */
 
