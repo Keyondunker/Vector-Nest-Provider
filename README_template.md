@@ -148,6 +148,10 @@ An example JSON file based on these type definitions:
 ```json
 {
   "name": "SQLite Cheap Small Disk",
+  "deploymentParams": {
+    "maxRAM": "512",
+    "diskSize": "1024"
+  },
   "params": {
     "RAM": {
       "value": 512,
