@@ -296,5 +296,5 @@ export abstract class AbstractProvider<
     agreement: Agreement,
     offer: DetailedOffer,
     resource: Resource
-  ): Promise<T>;
+  ): Promise<void>;
 }

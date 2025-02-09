@@ -67,17 +67,10 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
     agreement: Agreement,
     offer: DetailedOffer,
     resource: Resource
-  ): Promise<ExampleProductDetails> {
+  ): Promise<void> {
     /**
      * TODO: Implement how the resource will be deleted.
      */
-
-    // If there is no additional action need for the deletion, you can
-    // just leave this method as empty and return following:
-    /* return {
-      ...resource.details,
-      status: resource.deploymentStatus,
-    }; */
     throw new Error("Method not implemented.");
   }
 }
