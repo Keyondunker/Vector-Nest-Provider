@@ -146,7 +146,7 @@ export abstract class AbstractProvider<
 
         return {
           code: PipeResponseCode.OK,
-          body: files,
+          body: files.map((file) => file.content),
         };
       });
 
