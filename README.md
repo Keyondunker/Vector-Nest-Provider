@@ -156,7 +156,7 @@ Rename the file `README_template.md` in the root of the repository to `README.md
    > If you are planning to use different accounts for billing and operating, you need to pass additional flags: `--billing <address>` and `--operator <address>`. If you don't need that, just skip those flags.
 6. Run the following command:
    ```sh
-    forest register provider \
+    forest register pco \
         --details <JSON file name> \
         --account <private key file>
    ```

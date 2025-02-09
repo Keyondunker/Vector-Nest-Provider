@@ -215,6 +215,7 @@ You can run the daemon process with or without a container.
 Run the following commands in the daemon directory:
 
 ```sh
+npm i
 npm run build
 npm run db:migrate
 npm run start
