@@ -6,7 +6,7 @@ The Protocol is permissionless and everyone is allowed to create a new Product C
 
 This repository contains instructions and code templates for innovators who want to create their own Product Categories, grow them and earn passive income. What is required of a potential Product Category Owner is to: 
 1) [customise this code template according to this new Product Category's mission](#1-fork-and-edit-the-repository),
-2) register objects on-chain 
+2) [register objects on-chain](#2-registering-in-the-protocol),
 	1. [register as a Product Category Owner on-chain in the Forest Protocol](#21-register-as-a-product-category-owner),
 	2. [register a new Product Category on-chain](#22-register-a-new-product-category), 
 3) [customize the README file for Users and Providers](#3-prepare-the-readme-file-for-users-and-providers).
@@ -129,7 +129,7 @@ Once you are done with defining the abstract class, navigate to `src/product-cat
 
 ```typescript
 /**
- * The main class that implements provider specific actions.
+ * The main class that implements Provider specific actions.
  * @responsible Provider
  */
 export class MainProviderImplementation extends BaseExampleProductProvider {
@@ -208,7 +208,9 @@ forest product-category create \
 
 ### 3. Prepare the README file for Users and Providers
 
-Now rename the `README_template.md` file in the root of the repository to `README.md` (this will override this file, that's fine). From now on the `README.md` will include instructions for your Providers on how to easily integrate with your Product Category as well as basic information about your PC that might be interesting to Users. So the last thing you need to do is customize the information by filling out the sections denoted with `{...}`.
+Now you need to create a human-readable specification of your Product Category. Choose one of the provided templates of the `README.md` file. You can either go with a simple one (`README_template_simple.md`) if the definition might evolve over time or if you already have all of the answers you can use the comprehensive version (`README_template_comprehensive.md`). You have total freedom to shape this document in a way you think is best. Rename the chosen file to `README.md` (this will override this, but that's fine). 
+
+From now on the `README.md` will include basic information about your PC that might be interesting to Users. It also links to a Provider tutorial on how to easily integrate with your Product Category. So the last thing you need to do is customize the information by filling out the missing parts in the base `README.md` as well as in the `README_Become_a_Provider.md`.
 
 ### 4. Grow Your Product Category
 

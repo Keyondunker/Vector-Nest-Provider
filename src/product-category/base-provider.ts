@@ -11,7 +11,7 @@ import { z } from "zod";
 import { Address } from "viem";
 
 /**
- * The details gathered by the provider from the resource source.
+ * The details gathered by the Provider from the resource source.
  * This is the "details" type of each resource and it is stored in the database.
  * @responsible Product Category Owner
  */
@@ -23,16 +23,16 @@ export type ExampleProductDetails = ResourceDetails & {
 };
 
 /**
- * Base provider that defines what kind of actions needs to be implemented for the product category.
+ * Base Provider that defines what kind of actions needs to be implemented for the Product Category.
  * @responsible Product Category Owner
  */
 export abstract class BaseExampleProductProvider extends AbstractProvider<ExampleProductDetails> {
   /**
    * An example function that represents product specific action. This
-   * function has to be implemented by all of the providers that wants
+   * function has to be implemented by all of the Providers that wants
    * to provide this product.
    *
-   * The definition is up to product category owner. So if some of the
+   * The definition is up to Product Category Owner. So if some of the
    * arguments are not needed, they can be deleted. Like `agreement` or
    * `resource` can be deleted if they are unnecessary for the implementation.
    * @param agreement On-chain agreement data.
@@ -73,7 +73,7 @@ export abstract class BaseExampleProductProvider extends AbstractProvider<Exampl
           /** ID of the resource. */
           id: z.number(),
 
-          /** Product category address that the resource created in. */
+          /** Product Category address that the resource created in. */
           pc: addressSchema, // A pre-defined Zod schema for smart contract addresses.
 
           /** Additional argument for the method. */
