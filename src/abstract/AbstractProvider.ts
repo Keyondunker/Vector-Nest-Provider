@@ -271,15 +271,16 @@ export abstract class AbstractProvider<
 
   /**
    * Creates the actual resource based. Called based on the blockchain agreement creation event.
-   * @param agreement On-chain agreement of the resource
-   * @param offer Offer details stored in the database
+   * @param agreement On-chain Agreement data
+   * @param offer On-chain Offer data and details (if exists)
    */
   abstract create(agreement: Agreement, offer: DetailedOffer): Promise<T>;
 
   /**
    * Fetches/retrieves the details about the resource from the resource itself
-   * @param agreement On-chain agreement of the resource
-   * @param resource The details stored inside the database
+   * @param agreement On-chain Agreement data
+   * @param offer On-chain Offer data and details (if exists)
+   * @param resource Current details stored in the database
    */
   abstract getDetails(
     agreement: Agreement,
@@ -289,8 +290,9 @@ export abstract class AbstractProvider<
 
   /**
    * Deletes the actual resource based. Called based on the blockchain agreement closing event.
-   * @param agreement On-chain agreement of the resource
-   * @param resource The details stored inside the database
+   * @param agreement On-chain Agreement data
+   * @param offer On-chain Offer data and details (if exists)
+   * @param resource Current details stored in the database
    */
   abstract delete(
     agreement: Agreement,
