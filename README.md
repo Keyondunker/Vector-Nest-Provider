@@ -32,7 +32,7 @@ export type SQLiteDatabaseDetails = ResourceDetails & {
 };
 ```
 
-Once you have defined the details type, update the `BaseExampleProductProvider` abstract class to define this product's supported methods / functionality. This a set of actions that Users can request your Providers to complete if they have an active Agreement for a service in your PC. All Providers within this Product Category must implement all functions you define in this class. Rename the class to reflect your product. For example:
+Once you have defined the details type, update the `BaseExampleProductProvider` abstract class to define this product's supported methods / functionality. This is a set of actions that Users can request your Providers to complete if they have an active Agreement for a service in your PC. All Providers within this Product Category must implement all functions you define in this class. Rename the class to reflect your product. For example:
 
 ```typescript
 export abstract class BaseSQLiteDatabaseProvider extends AbstractProvider<SQLiteDatabaseDetails> {
