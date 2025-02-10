@@ -65,12 +65,14 @@ First, create files that contain details for each Offer you plan to register. Yo
 ##### 3.1 Creating the Offer details file
 
 **Plain text example**
+
 ```
 Minimum of 2 requests per minute.
 At least 200 API calls per subscription per month.
 ```
 
 **JSON schemed example**
+
 Create a JSON file following the type definitions below:
 
 > These are pseudo-type definitions to illustrate the JSON schema.
