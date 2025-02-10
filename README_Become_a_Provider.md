@@ -2,6 +2,12 @@
 
 If you want to start providing services in this Product Category follow the steps below.
 
+1) [Register in the Protocol](#1-register-in-the-protocol),
+2) [Register in this Product Category](#2-register-in-this-product-category),
+3) [Register Offers](#3-register-offers),
+4) [Fork and Implement This Repository](#4-fork-and-implement-this-repository),
+5) [Run the Provider Daemon](#5-run-the-provider-daemon).
+
 ### Step-by-step instructions
 
 #### Prerequisites

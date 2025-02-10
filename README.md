@@ -5,12 +5,12 @@ Forest Protocols consists of a multitude of Product Categories that are incentiv
 The Protocol is permissionless and everyone is allowed to create a new Product Category.
 
 This repository contains instructions and code templates for innovators who want to create their own Product Categories, grow them and earn passive income. What is required of a potential Product Category Owner is to: 
-1) [customise this code template according to this new Product Category's mission](#1-fork-and-edit-the-repository),
-2) [register objects on-chain](#2-registering-in-the-protocol),
-	1. [register as a Product Category Owner on-chain in the Forest Protocol](#21-register-as-a-product-category-owner),
-	2. [register a new Product Category on-chain](#22-register-a-new-product-category), 
-3) [customize the README file for Users and Providers](#3-prepare-the-readme-file-for-users-and-providers).
-4) [grow the community and onboard Providers, Validators and Users](#4-grow-your-product-category).
+1) [Fork and edit the repository](#1-fork-and-edit-the-repository),
+2) [Registering in the Protocol](#2-registering-in-the-protocol),
+	1. [Register as a Product Category Owner](#21-register-as-a-product-category-owner),
+	2. [Register a New Product Category](#22-register-a-new-product-category), 
+3) [Prepare the README file for Users and Providers](#3-prepare-the-readme-file-for-users-and-providers).
+4) [Grow Your Product Category by Onboarding Providers, Validators and Users](#4-grow-your-product-category).
 
 ## Quickstart
 
