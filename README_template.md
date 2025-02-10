@@ -266,18 +266,3 @@ docker compose up # Add "-d" to run in detached mode
 ```
 
 That's all folks!
-
-## Become a Validator [WIP]
-
-#### Step-by-step instructions
-
-In order to start providing validation services for this Product Category you need to:
-
-1. Run your Validator Node based on the code from this repository. Detailed instructions here: [link](https://github.com/this_repo/validator/README.md)
-2. Install a Forest Protocols CLI by following these instructions: [link](https://github.com/forest-protocols/cli....)
-3. Using the CLI register in the Protocol as a Validator:
-   a. `command 1`
-   b. `command 2`
-4. Using the CLI register in our Product Category:
-   a. `command 1`
-   b. `command 2`
