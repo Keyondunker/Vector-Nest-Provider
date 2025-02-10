@@ -271,12 +271,14 @@ class Database {
       });
     }
 
-    await this.client.delete(schema.detailFilesTable);
+    await this.client.transaction(async (tx) => {
+      await tx.delete(schema.detailFilesTable);
 
-    await this.client
-      .insert(schema.detailFilesTable)
-      .values(values)
-      .onConflictDoNothing(); // TODO: Should we clear the database and sync detail files again?
+      await tx
+        .insert(schema.detailFilesTable)
+        .values(values)
+        .onConflictDoNothing(); // TODO: Should we clear the database and sync detail files again?
+    });
   }
 
   async upsertProvider(id: number, detailsLink: string, ownerAddress: Address) {
@@ -292,11 +294,6 @@ class Database {
           )
         );
 
-      if (existingProvider) {
-        // TODO: Update provider
-        return;
-      }
-
       const [detailFile] = await tx
         .select({
           id: schema.detailFilesTable.id,
@@ -308,6 +305,11 @@ class Database {
         throw new Error(
           `Details file not found for Provider ${id}. Please be sure you've placed the details of the provider into "data/details/[filename].json"`
         );
+      }
+
+      if (existingProvider) {
+        // TODO: Update provider
+        return;
       }
 
       await tx.insert(schema.providersTable).values({
@@ -330,11 +332,6 @@ class Database {
           eq(schema.productCategoriesTable.address, address.toLowerCase())
         );
 
-      // TODO: Update PC
-      if (pc) {
-        return;
-      }
-
       const [detailFile] = await tx
         .select({
           id: schema.detailFilesTable.id,
@@ -346,6 +343,11 @@ class Database {
         throw new Error(
           `Details file not found for Product Category ${address}. Please be sure you've placed the details of the Product Category into "data/details/[filename]"`
         );
+      }
+
+      // TODO: Update PC
+      if (pc) {
+        return;
       }
 
       await tx.insert(schema.productCategoriesTable).values({
