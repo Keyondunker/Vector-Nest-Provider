@@ -149,6 +149,10 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 
 #### 2.1 Register as a Product Category Owner
 
+All Actors such as Product Category Owners, Providers and Validators need to register in the Protocol and pay the registration fee before they can start any type of interactions.
+
+TESTNET NOTE: if you need testnet tokens reach out to the Forest Protocols team on Discord.
+
 1. Create a JSON detail file in the following schema and save it somewhere:
 
 ```json
@@ -174,7 +178,14 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 
 #### 2.2 Register a New Product Category
 
-Create a file with detailed information about this Product Category. The file can be in plain text, Markdown or any other format that you want. Save it at `data/details/[file name]` in your forked Provider Template repository.
+Each Product Category is a separate smartcontract that is deployed by the Registry main protocol contract. To deploy a new Product Category:
+1. Create a file with detailed information about this Product Category. The file can be in plain text, Markdown or any other format that you want. 
+```json
+{
+	"TODO": "example file"
+}
+```
+2. Save it at `data/details/[file name]` in your forked Provider Template repository.
 
 ```sh
 forest product-category create \

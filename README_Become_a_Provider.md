@@ -31,18 +31,19 @@ Install [Node.js](https://nodejs.org) (min version 22.12.0) environment, Forest 
 3. Take that account's private key and save it to a file.
 4. Put the JSON file and that private key file into the same folder.
 5. Open up a terminal in that folder.
-   > If you are planning to use different accounts for billing and operating, you need to pass additional flags: `--billing <address>` and `--operator <address>`. This seperation increases security of your configuration. Setting a billing address allows for having a seperate address / identity for claiming your earnings and rewards while setting an operator allows you to delegate the operational work of running a daemon and servicing user requests to a third-party or a hotkey. If you don't need that, just skip those flags and the logic of the Protocol will use your main address as your billing and operator address.
-6. Run the following command:
+   > If you are planning to use different accounts for billing and operating, you need to pass additional flags: `--billing <address>` and `--operator <address>`. This separation increases security of your configuration. Setting a billing address allows for having a separate address / identity for claiming your earnings and rewards while setting an operator allows you to delegate the operational work of running a daemon and servicing user requests to a third-party or a hotkey. If you don't need that, just skip those flags and the logic of the Protocol will use your main address as your billing and operator address.
+6. Run the following command to register in the Protocol to be allowed to interact with Protocol's resources:
    ```sh
     forest register provider \
         --details <JSON file name> \
         --account <private key file>
    ```
+    TESTNET NOTE: if you need testnet tokens reach out to the Forest Protocols team on Discord.
 7. Save your detail file somewhere. Later you'll place this file into `data/details` folder.
 
 #### 2. Register in this Product Category
 
-Use the following command to register in this Product Category:
+You can take part in many Product Categories. In order to join this one run the following command:
 
 ```shell
 forest provider register-in \
