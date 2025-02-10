@@ -133,8 +133,6 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 }
 ```
 
-Rename the file `README_template.md` in the root of the repository to `README.md`, then fill out the sections mentioned with `{...}` in the whole file.
-
 ### 2. Registering in the Protocol
 
 #### 2.1 Register as a Product Category Owner
@@ -198,5 +196,7 @@ forest product-category create \
 | `--pco-share`              | Percentage of emissions allocated to the Product Category Owner. |
 
 ### Final Steps
+
+Now rename the file `README_template.md` in the root of the repository to `README.md`, then fill out the sections mentioned with `{...}` in the whole file.
 
 Congratulations! You have registered in the Protocol and created your Product Category. Now, publish your Provider Template and inform potential Providers and Validators on how to participate in your Product Category.
