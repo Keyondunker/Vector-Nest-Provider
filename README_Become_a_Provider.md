@@ -61,7 +61,16 @@ First, create files that contain details for each Offer you plan to register. Yo
 - Create a plain text or Markdown file with human-readable Offer details. This approach does not allow parameterization of Offers. Also these details won't be visible in the CLI. However this approach is often good enough for a number of use cases like API access.
 - Create a JSON file following the schema below. This approach makes Offer details visible and filterable in the CLI and the web marketplace while also allowing parameterization of resource creation.
 
-##### 3.1 JSON Schemed Offer Details
+##### 3.1 Plain Text Offer Details
+
+**If you are not using this option, you may skip this section.**
+
+```
+Minimum of 2 requests per minute.
+At least 200 API calls per subscription per month.
+```
+
+##### 3.2 JSON Schemed Offer Details
 
 **If you are not using this option, you may skip this section.**
 
