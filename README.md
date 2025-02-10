@@ -158,7 +158,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
         --details <JSON file name> \
         --account <private key file>
    ```
-7. Save your detail file somewhere. Later you'll place this file into `data/details` folder.
+7. Save your detail file into `data/details` folder.
 
 #### 2.2 Register a New Product Category
 
