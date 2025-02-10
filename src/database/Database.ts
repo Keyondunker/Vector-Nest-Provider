@@ -130,6 +130,7 @@ class Database {
           ownerAddress: sql<Address>`${schema.resourcesTable.ownerAddress}`,
           offerId: schema.resourcesTable.offerId,
           providerId: schema.resourcesTable.providerId,
+          providerAddress: sql<Address>`${schema.providersTable.ownerAddress}`,
           pcAddress: sql<Address>`${schema.productCategoriesTable.address}`,
         })
         .from(schema.resourcesTable)
@@ -139,6 +140,10 @@ class Database {
             schema.productCategoriesTable.address,
             schema.resourcesTable.pcAddressId
           )
+        )
+        .innerJoin(
+          schema.providersTable,
+          eq(schema.providersTable.id, schema.resourcesTable.providerId)
         )
         .$dynamic();
     }
@@ -154,9 +159,14 @@ class Database {
         ownerAddress: sql<Address>`${schema.resourcesTable.ownerAddress}`,
         offerId: schema.resourcesTable.offerId,
         providerId: schema.resourcesTable.providerId,
+        providerAddress: sql<Address>`${schema.providersTable.ownerAddress}`,
         pcAddress: sql<Address>`${pcAddress}`,
       })
       .from(schema.resourcesTable)
+      .innerJoin(
+        schema.providersTable,
+        eq(schema.providersTable.id, schema.resourcesTable.providerId)
+      )
       .$dynamic();
   }
 
@@ -260,6 +270,8 @@ class Database {
         content: content,
       });
     }
+
+    await this.client.delete(schema.detailFilesTable);
 
     await this.client
       .insert(schema.detailFilesTable)

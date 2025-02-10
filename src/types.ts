@@ -34,6 +34,7 @@ export type Resource = {
   ownerAddress: Address;
   offerId: number;
   providerId: number;
+  providerAddress: Address;
   pcAddress: Address;
 };
 
