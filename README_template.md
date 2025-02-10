@@ -71,7 +71,14 @@ More in-depth descriptions of the Tests:
 
 ### Step-by-step instructions
 
-In order to start providing services for this Product Category you need to follow the steps below. But before, you need to install Forest Protocols CLI by following these instructions: [link](https://github.com/Forest-Protocols/forest-cli)
+#### Prerequisites
+
+You must have an installed [Node.js](https://nodejs.org) (min version 22.12.0) environment, Forest Protocols [CLI](https://github.com/Forest-Protocols/forest-cli) tool and a functional PostgreSQL (min version 16) database for the daemon. To install that environment, you can check the resources below;
+
+- Node.js [official](https://nodejs.org/en/download) downloads page
+- [nvm](https://github.com/nvm-sh/nvm) - Node Version Manager, helps to manage multiple Node versions at the same time.
+- PostgreSQL [official](https://www.postgresql.org/download/) downloads page
+- Docker [image](https://hub.docker.com/_/postgres) for PostgreSQL
 
 #### 1. Register in the Protocol
 
