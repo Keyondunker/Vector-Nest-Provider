@@ -1,14 +1,24 @@
-# Base Provider Template
+# Creating a new Product Category
 
-This repository contains the base Provider Template for the people wants to create their own Product Categories in Forest Protocols.
+Forest Protocols consists of a multitude of Product Categories that are incentivised to accelerate digital innovation and prove their worth to the users by building in-demand services. Every digital service can become a Product Category within Forest Protocols. The diversity of Product Categories together with Protocol's inherent interoperability is what adds up to its strength.
+
+The Protocol is permissionless and everyone is allowed to create a new Product Category.
+
+This repository contains instructions and code templates for innovators who want to create their own Product Categories, grow them and earn passive income. What is required of a potential Product Category Owner is to: 
+1) customise this code template according to this new Product Category's mission,
+2) register as a Product Category Owner on-chain in the Forest Protocol,
+3) register a new Product Category on-chain, 
+4) grow the community and onboard Providers, Validators and Users.
 
 ## Quickstart
 
+As a Product Category Owner you want to make life easy on Providers that will be adding offers to your PC and servicing clients. That's why you need to create a Provider Template that each Provider will be running to cater to its clients. We have already implemented all of the Protocol level functionality. The only thing you need to do is to define the Product Category specific code.
+
 ### 1. Fork and edit the repository
 
-Fork this repository and clone it locally. Open the `src/product-category/base-provider.ts` file. The first step is to define the details each resource will have. At the beginning of the file, there is a type definition named `ExampleProductDetails`, which specifies the attributes stored for each resource in this Product Category.
+Fork this repository and clone it locally. Open the `src/product-category/base-provider.ts` file. The first step is to define the details each resource will have. At the beginning of the file, there is a type definition named `ExampleProductDetails`, which specifies the attributes stored <TODO: where?> for each resource in this Product Category. <TODO: why do I need to store that, what will that be used for>
 
-For instance, if your product is a database or API service, it will likely include connection strings, API keys, or endpoints.
+For instance, if your product is a database or an API service, it will likely include connection strings, API keys, or endpoints.
 
 Rename the type to match your product and edit the fields accordingly. An example type definition for the SQLite Product Category is shown below:
 
@@ -22,13 +32,13 @@ export type SQLiteDatabaseDetails = ResourceDetails & {
 };
 ```
 
-Once you have defined the details type, update the `BaseExampleProductProvider` abstract class to define the product's functionality. Providers within this Product Category must implement all functions in this class. Rename the class to reflect your product. For example:
+Once you have defined the details type, update the `BaseExampleProductProvider` abstract class to define this product's supported methods / functionality. This a set of actions that Users can request your Providers to complete if they have an active Agreement for a service in your PC. All Providers within this Product Category must implement all functions you define in this class. Rename the class to reflect your product. For example:
 
 ```typescript
 export abstract class BaseSQLiteDatabaseProvider extends AbstractProvider<SQLiteDatabaseDetails> {
   /**
    * Defines the product's functionality. All functions below
-   * must be implemented by providers in this Product Category.
+   * must be implemented by Providers in this Product Category.
    */
 
   /**
@@ -41,7 +51,7 @@ export abstract class BaseSQLiteDatabaseProvider extends AbstractProvider<SQLite
 }
 ```
 
-After defining your product's functionalities (e.g., `sqlQuery`), you need to create "Pipe" endpoints to allow resource owners to invoke these functions.
+After defining your product's functionalities (e.g., `sqlQuery`), you need to create "Pipe" endpoints to allow Users to invoke these functions.
 
 > "**_Pipe_**" is a simple abstraction layer for HTTP-like request-response communication between participants. The current Pipe implementation is built on [XMTP](https://xmtp.org/) for fully decentralized communication within the Protocol.
 
@@ -151,7 +161,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 3. Take that account's private key and save it to a file.
 4. Put the JSON file and that private key file into the same folder.
 5. Open up a terminal in that folder.
-   > If you are planning to use different accounts for billing and operating, you need to pass additional flags: `--billing <address>` and `--operator <address>`. If you don't need that, just skip those flags.
+   > If you are planning to use different accounts for billing and operating, you need to pass additional flags: `--billing <address>` and `--operator <address>`. This seperation increases security of your configuration. Setting a billing address allows for having a seperate address / identity for claiming your earnings and rewards while setting an operator allows you to delegate the operational work of running a daemon and servicing user requests to a third-party or a hotkey. If you don't need that, just skip those flags and the logic of the Protocol will use your main address as your billing and operator address.
 6. Run the following command:
    ```sh
     forest register pco \
@@ -186,7 +196,7 @@ forest product-category create \
 | -------------------------- | ---------------------------------------------------------------- |
 | `--max-validator`          | Maximum number of Validators that can be registered.             |
 | `--max-provider`           | Maximum number of Providers that can be registered.              |
-| `--min-collateral`         | Minimum FOREST token collateral required for registration.       |
+| `--min-collateral`         | Minimum FOREST token collateral required for a registration.     |
 | `--validator-register-fee` | Registration fee (FOREST token) for Validators.                  |
 | `--provider-register-fee`  | Registration fee (FOREST token) for Providers.                   |
 | `--offer-register-fee`     | Fee for Providers to register a new Offer.                       |
@@ -197,6 +207,6 @@ forest product-category create \
 
 ### Final Steps
 
-Now rename the file `README_template.md` in the root of the repository to `README.md`, then fill out the sections mentioned with `{...}` in the whole file.
+Now rename the file `README_template.md` in the root of the repository to `README.md`. You can override this file. From now on the README.md will include instructions for your Providers on how to easily integrate with your Product Category. The last thing you need to do is customize that instruction by filling out the sections denoted with `{...}` in the whole file.
 
 Congratulations! You have registered in the Protocol and created your Product Category. Now, publish your Provider Template and inform potential Providers and Validators on how to participate in your Product Category.
