@@ -1,15 +1,12 @@
 import {
   addressSchema,
   Agreement,
-  PipeError,
   PipeMethod,
   PipeResponseCode,
   validateBodyOrParams,
 } from "@forest-protocols/sdk";
 import { AbstractProvider } from "@/abstract/AbstractProvider";
 import { Resource, ResourceDetails } from "@/types";
-import { DB } from "@/database/Database";
-import { PipeErrorNotFound } from "@/errors/pipe/PipeErrorNotFound";
 import { z } from "zod";
 import { Address } from "viem";
 
@@ -64,7 +61,7 @@ export abstract class BaseExampleProductProvider extends AbstractProvider<Exampl
      */
 
     /** Calls "doSomething" method. */
-    this.pipe.route(PipeMethod.GET, "/do-something", async (req) => {
+    this.route(PipeMethod.GET, "/do-something", async (req) => {
       /**
        * Validates the params/body of the request. If they are not valid
        * request will reply back to the user with a validation error message
@@ -88,27 +85,20 @@ export abstract class BaseExampleProductProvider extends AbstractProvider<Exampl
        * Retrieve the resource from the database.
        *
        * IMPORTANT NOTE:
-       * Inside your route handlers, you always need to use `req.requester` when
-       * you retrieve resource from the database. With that approach you can be
-       * sure that the requester is the owner of the resource (because otherwise the resource
-       * won't be found). Basically the authorization stuff. If you want to add more logic
-       * for the authorization (like call limiting etc.) you can do as well next to retrieving resource process.
+       * We need to authorize the user (to be sure that he is the actual owner
+       * of the resource) before processing the request. To do this, we can
+       * use `this.getResource`. This method tries to find the resource data
+       * in the database based on the requester and throws proper errors if it cannot.
+       * If the requester is not the owner of the resource, it won't be found.
+       *
+       * So even you don't need to use resource data, you need to call `this.getResource`
+       * to be sure that user is actual owner of the resource.
        */
-
-      const resource = await DB.getResource(
+      const { agreement, resource } = await this.getResource(
         body.id,
-        req.requester,
-        body.pc as Address
+        body.pc as Address,
+        req.requester
       );
-
-      // If resource is not found or not active, throws a not found error.
-      // "Active" means; is the agreement still active on-chain?
-      if (!resource || !resource.isActive) {
-        throw new PipeErrorNotFound("Resource");
-      }
-
-      const pc = this.productCategories[body.pc]; // Product category client.
-      const agreement = await pc.getAgreement(resource.id); // Retrieve the agreement details from chain
 
       // Call the actual method and store the results of it.
       const result = await this.doSomething(agreement, resource, body.argument);

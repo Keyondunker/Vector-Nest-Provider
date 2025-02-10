@@ -1,4 +1,10 @@
-import { DeploymentStatus } from "@forest-protocols/sdk";
+import {
+  DeploymentStatus,
+  Offer,
+  OfferDetails,
+  PipeRequest,
+  PipeRouteHandlerResponse,
+} from "@forest-protocols/sdk";
 import { Address } from "viem";
 
 /**
@@ -16,16 +22,6 @@ export type ResourceDetails = {
 };
 
 /**
- * Offer details from the database.
- */
-export type OfferDetails = {
-  id: number;
-  details: any;
-  deploymentParams: any;
-  productCategory: Address;
-};
-
-/**
  * Resource details from the database.
  */
 export type Resource = {
@@ -36,14 +32,15 @@ export type Resource = {
   groupName: string;
   isActive: boolean;
   ownerAddress: Address;
-  offer: {
-    id: number;
-    details: any;
-    productCategory: Address;
-    provider: {
-      id: number;
-      details: any;
-      ownerAddress: Address;
-    };
-  };
+  offerId: number;
+  providerId: number;
+  pcAddress: Address;
 };
+
+export type DetailedOffer = Offer & {
+  details?: OfferDetails | string;
+};
+
+export type ProviderPipeRouteHandler = (
+  req: PipeRequest & { providerId: number }
+) => Promise<PipeRouteHandlerResponse | void> | PipeRouteHandlerResponse | void;

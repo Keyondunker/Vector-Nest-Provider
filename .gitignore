@@ -4,9 +4,5 @@ node_modules
 !.env.*example
 dist
 data/providers.json
-data/product-categories/*.json
-data/offers/**/*.json
 
-
-!data/product-categories/*.example.json*
-!data/offers/*.example.json*
+volumes
