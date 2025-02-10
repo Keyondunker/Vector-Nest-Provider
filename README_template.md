@@ -43,11 +43,11 @@ You can always double-check the on-chain values e.g. [here](https://sepolia-opti
 
 ## Endpoints
 
-| Path         | Params/Body                             | Response                 | Description                                                                                                                                                                                    |
-| ------------ | --------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/details`   | `body: string[]`                        | `string[]`               | Retrieves the contents of detail files for the given CIDs. If one CID is given and corresponding file is not found, returns 404/Not Found. Otherwise returns an array of contents of the files |
-| `/resources` | `params: { id?: number, pc?: Address }` | `Resource[] \| Resource` | If `id` and `pc` is given, retrieves one resource information. Otherwise returns all resources of the requester                                                                                |
-| `{Endpoint}` | `{Body}`                                | `{Return Type}`          | `{Description}`                                                                                                                                                                                |
+| Method-Path      | Params/Body                             | Response                 | Description                                                                                                                                                                                    |
+| ---------------- | --------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /details`   | `body: string[]`                        | `string[]`               | Retrieves the contents of detail files for the given CIDs. If one CID is given and corresponding file is not found, returns 404/Not Found. Otherwise returns an array of contents of the files |
+| `GET /resources` | `params: { id?: number, pc?: Address }` | `Resource[] \| Resource` | If `id` and `pc` is given, retrieves one resource information. Otherwise returns all resources of the requester                                                                                |
+| `{Endpoint}`     | `{Body}`                                | `{Return Type}`          | `{Description}`                                                                                                                                                                                |
 
 ## Tests and Quality Thresholds [WIP]
 
