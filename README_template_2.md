@@ -29,7 +29,6 @@ How will validators score AI models provided.  It should be described in high le
 - **Params**:
   - `id` (number, optional): Id of the resource for which to fetch information
   - `pc` (Address, optional):  PC address where the resource of interest lives
-
 - **Returns**:
    - `Resource[] | Resource`: If `id` and `pc` is given, retrieves one resource information. Otherwise returns all resources of the requester
 
@@ -37,11 +36,9 @@ How will validators score AI models provided.  It should be described in high le
 - **Params**:
   - `parameterName` (datatype): Describe parameter. Optionally state max character length or other restrictions.
   - `otherParameter` (string, optional):  specific options avaliable `realistic`, `cartoon` or `minimalist`. 
-
 - **Returns**:
    - `returnDataTypeFormat` Describe the return object
         - `subElementRetenred` (string): If the returned object is JSON or another composite data type one can describe sub elements here also 
-
      - Add any functional requirements that are not directly linekd to a datatype here
 
 ## Performance Requirements
