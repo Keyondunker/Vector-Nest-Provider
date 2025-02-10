@@ -48,6 +48,24 @@ This Product Category has the following configuration. Some of them are enforced
 
 You can always double-check the on-chain values e.g. [here](https://sepolia-optimism.etherscan.io/address/`{Smart Contract Address}`#readContract)
 
+## Performance Requirements
+
+The Validators are performing a number of tests on Resources to ensure quality across the board. Below is a list of checked Benchmarks:
+
+| Name          | Units     | Threshold Value | Min / Max   |
+| ------------- | --------- | --------------- | ----------- |
+| `{Test Name 1}` | `{Units}` | `{Value}`   | `{Min / Max}` |
+| `{Test Name 2}` | `{Units}` | `{Value}`   | `{Min / Max}` |
+| `{Test Name 3}` | `{Units}` | `{Value}`   | `{Min / Max}` |
+
+More in-depth descriptions of the Tests (optional):
+
+| Name          | Description             |
+| ------------- | ----------------------- |
+| {Test Name 1} | {Long form description} |
+| {Test Name 2} | {Long form description} |
+| {Test Name 3} | {Long form description} |
+
 ## Become a Provider in this Product Category
 
 If you want to start providing services in this Product Category follow this tutorial: [link](README_Become_a_Provider.md)
