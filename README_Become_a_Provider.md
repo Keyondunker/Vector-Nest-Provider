@@ -61,19 +61,16 @@ First, create files that contain details for each Offer you plan to register. Yo
 - Create a plain text or Markdown file with human-readable Offer details. This approach does not allow parameterization of Offers. Also these details won't be visible in the CLI. However this approach is often good enough for a number of use cases like API access.
 - Create a JSON file following the schema below. This approach makes Offer details visible and filterable in the CLI and the web marketplace while also allowing parameterization of resource creation.
 
-##### 3.1 Plain Text Offer Details
 
-**If you are not using this option, you may skip this section.**
+##### 3.1 Creating the Offer details file
 
+**Plain text example**
 ```
 Minimum of 2 requests per minute.
 At least 200 API calls per subscription per month.
 ```
 
-##### 3.2 JSON Schemed Offer Details
-
-**If you are not using this option, you may skip this section.**
-
+**JSON schemed example**
 Create a JSON file following the type definitions below:
 
 > These are pseudo-type definitions to illustrate the JSON schema.
@@ -124,8 +121,11 @@ An example JSON file based on these type definitions:
   }
 }
 ```
+##### 3.2 Saving the file
+After creating the Offer details file, save it in an accessible location. 
 
-After creating the Offer details file, save it in an accessible location. Now register your Offer using the following command:
+##### 3.3 Registering the Offer on-chain
+Now register your Offer using the following command:
 
 ```shell
 forest provider register-offer \
