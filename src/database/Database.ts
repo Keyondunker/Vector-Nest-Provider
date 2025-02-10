@@ -277,7 +277,7 @@ class Database {
       await tx
         .insert(schema.detailFilesTable)
         .values(values)
-        .onConflictDoNothing(); // TODO: Should we clear the database and sync detail files again?
+        .onConflictDoNothing();
     });
   }
 
