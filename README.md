@@ -6,15 +6,16 @@ The Protocol is permissionless and everyone is allowed to create a new Product C
 
 This repository contains instructions and code templates for innovators who want to create their own Product Categories, grow them and earn passive income. What is required of a potential Product Category Owner is to: 
 1) [customise this code template according to this new Product Category's mission](#1-fork-and-edit-the-repository),
-2) [register as a Product Category Owner on-chain in the Forest Protocol](#step21),
-3) register a new Product Category on-chain, 
-4) grow the community and onboard Providers, Validators and Users.
+2) register objects on-chain 
+	1. [register as a Product Category Owner on-chain in the Forest Protocol](#21-register-as-a-product-category-owner),
+	2. [register a new Product Category on-chain](#22-register-a-new-product-category), 
+3) [customize the README file for Users and Providers](#3-prepare-the-readme-file-for-users-and-providers).
+4) [grow the community and onboard Providers, Validators and Users](#4-grow-your-product-category).
 
 ## Quickstart
 
 As a Product Category Owner you want to make life easy on Providers that will be adding offers to your PC and servicing clients. That's why you need to create a Provider Template that each Provider will be running to cater to its clients. We have already implemented all of the Protocol level functionality. The only thing you need to do is to define the Product Category specific code.
 
-<a name="step1"></a>
 ### 1. Fork and edit the repository
 
 Fork this repository and clone it locally. Open the `src/product-category/base-provider.ts` file. The first step is to define the details each resource will have. At the beginning of the file, there is a type definition named `ExampleProductDetails`, which specifies the attributes stored <TODO: where?> for each resource in this Product Category. <TODO: why do I need to store that, what will that be used for>
@@ -144,9 +145,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 }
 ```
 
-<a name="step2"></a>
 ### 2. Registering in the Protocol
-<a name="step21"></a>
 #### 2.1 Register as a Product Category Owner
 
 1. Create a JSON detail file in the following schema and save it somewhere:
@@ -172,7 +171,6 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
    ```
 7. Save your detail file into `data/details` folder.
 
-<a name="step22"></a>
 #### 2.2 Register a New Product Category
 
 Create a file with detailed information about this Product Category. The file can be in plain text, Markdown or any other format that you want. Save it at `data/details/[file name]` in your forked Provider Template repository.
@@ -208,12 +206,10 @@ forest product-category create \
 | `--validator-share`        | Percentage of emissions allocated to Validators.                 |
 | `--pco-share`              | Percentage of emissions allocated to the Product Category Owner. |
 
-<a name="step3"></a>
-### 3. Prepare the README for Users and Providers
+### 3. Prepare the README file for Users and Providers
 
 Now rename the `README_template.md` file in the root of the repository to `README.md` (this will override this file, that's fine). From now on the `README.md` will include instructions for your Providers on how to easily integrate with your Product Category as well as basic information about your PC that might be interesting to Users. So the last thing you need to do is customize the information by filling out the sections denoted with `{...}`.
 
-<a name="step4"></a>
 ### 4. Grow Your Product Category
 
 Congratulations! You have registered in the Protocol and created your Product Category. Now, publish your Provider Template and inform potential Providers and Validators on how to participate in your Product Category.
