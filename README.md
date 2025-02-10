@@ -1,6 +1,6 @@
 # Creating a new Product Category
 
-Forest Protocols consists of a multitude of Product Categories that are incentivised to accelerate digital innovation and prove their worth to the users by building in-demand services. Every digital service can become a Product Category within Forest Protocols. The diversity of Product Categories together with Protocol's inherent interoperability is what adds up to its strength.
+Forest Protocols consists of a multitude of Product Categories that are incentivized to accelerate digital innovation and prove their worth to the users by building in-demand services. Every digital service can become a Product Category within Forest Protocols. The diversity of Product Categories together with Protocol's inherent interoperability is what adds up to its strength.
 
 The Protocol is permissionless and everyone is allowed to create a new Product Category.
 
@@ -18,9 +18,9 @@ As a Product Category Owner you want to make life easy on Providers that will be
 
 ### 1. Fork and edit the repository
 
-Fork this repository and clone it locally. Open the `src/product-category/base-provider.ts` file. The first step is to define the details each resource will have. At the beginning of the file, there is a type definition named `ExampleProductDetails`, which specifies the attributes stored <TODO: where?> for each resource in this Product Category. <TODO: why do I need to store that, what will that be used for>
+Fork this repository and clone it locally. Open the `src/product-category/base-provider.ts` file. The first step is to define the details each resource will have. At the beginning of the file, there is a type definition named `ExampleProductDetails`, which specifies the attributes stored in the daemon's database for each resource in this Product Category.
 
-For instance, if your product is a database or an API service, it will likely include connection strings, API keys, or endpoints.
+Details of a resource are most likely its credentials. They will be accessible for the Users (unless you prefix the detail name with `_`) and can also be used internally by Providers serving in this Product Category. For instance, these details might include connection strings for a Database resource or endpoints and API keys for an API service resource.
 
 Rename the type to match your product and edit the fields accordingly. An example type definition for the SQLite Product Category is shown below:
 
@@ -146,6 +146,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 ```
 
 ### 2. Registering in the Protocol
+
 #### 2.1 Register as a Product Category Owner
 
 1. Create a JSON detail file in the following schema and save it somewhere:
@@ -162,7 +163,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 3. Take that account's private key and save it to a file.
 4. Put the JSON file and that private key file into the same folder.
 5. Open up a terminal in that folder.
-   > If you are planning to use different accounts for billing and operating, you need to pass additional flags: `--billing <address>` and `--operator <address>`. This seperation increases security of your configuration. Setting a billing address allows for having a seperate address / identity for claiming your earnings and rewards while setting an operator allows you to delegate the operational work of running a daemon and servicing user requests to a third-party or a hotkey. If you don't need that, just skip those flags and the logic of the Protocol will use your main address as your billing and operator address.
+   > If you are planning to use different accounts for billing and operating, you need to pass additional flags: `--billing <address>` and `--operator <address>`. This separation increases security of your configuration. Setting a billing address allows for having a separate address / identity for claiming your earnings and rewards while setting an operator allows you to delegate the operational work of running a daemon and servicing user requests to a third-party or a hotkey. If you don't need that, just skip those flags and the logic of the Protocol will use your main address as your billing and operator address.
 6. Run the following command:
    ```sh
     forest register pco \
