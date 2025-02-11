@@ -2,11 +2,11 @@
 
 If you want to start providing services in this Product Category follow the steps below.
 
-1) [Register in the Protocol](#1-register-in-the-protocol),
-2) [Register in this Product Category](#2-register-in-this-product-category),
-3) [Register Offers](#3-register-offers),
-4) [Fork and Implement This Repository](#4-fork-and-implement-this-repository),
-5) [Run the Provider Daemon](#5-run-the-provider-daemon).
+1. [Register in the Protocol](#1-register-in-the-protocol),
+2. [Register in this Product Category](#2-register-in-this-product-category),
+3. [Register Offers](#3-register-offers),
+4. [Fork and Implement This Repository](#4-fork-and-implement-this-repository),
+5. [Run the Provider Daemon](#5-run-the-provider-daemon).
 
 ### Step-by-step instructions
 
@@ -44,7 +44,7 @@ Install [Node.js](https://nodejs.org) (min version 22.12.0) environment, Forest 
         --details <JSON file name> \
         --account <private key file>
    ```
-    TESTNET NOTE: if you need testnet tokens reach out to the Forest Protocols team on Discord.
+   TESTNET NOTE: if you need testnet tokens reach out to the Forest Protocols team on [Discord](https://discord.gg/2MsTWq2tc7).
 7. Save your detail file somewhere. Later you'll place this file into `data/details` folder.
 
 #### 2. Register in this Product Category
@@ -65,8 +65,7 @@ Now that you are registered in the Protocol and this Product Category, the next 
 First, create files that contain details for each Offer you plan to register. You have two options for these detail files:
 
 - Create a plain text or Markdown file with human-readable Offer details. This approach does not allow parameterization of Offers. Also these details won't be visible in the CLI. However this approach is often good enough for a number of use cases like API access.
-- Create a JSON file following the schema below. This approach makes Offer details visible and filterable in the CLI and the web marketplace while also allowing parameterization of resource creation.
-
+- Create a JSON file following the schema below. This approach makes Offer details visible and filterable in the CLI and the Marketplace while also allowing parameterization of resource creation.
 
 ##### 3.1 Creating the Offer details file
 
@@ -129,10 +128,13 @@ An example JSON file based on these type definitions:
   }
 }
 ```
+
 ##### 3.2 Saving the file
-After creating the Offer details file, save it in an accessible location. 
+
+After creating the Offer details file, save it in an accessible location.
 
 ##### 3.3 Registering the Offer on-chain
+
 Now register your Offer using the following command:
 
 ```shell
