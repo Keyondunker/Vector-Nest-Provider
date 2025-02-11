@@ -4,13 +4,14 @@ Forest Protocols consists of a multitude of Product Categories that are incentiv
 
 The Protocol is permissionless and everyone is allowed to create a new Product Category.
 
-This repository contains instructions and code templates for innovators who want to create their own Product Categories, grow them and earn passive income. What is required of a potential Product Category Owner is to: 
-1) [Fork and edit the repository](#1-fork-and-edit-the-repository),
-2) [Registering in the Protocol](#2-registering-in-the-protocol),
-	1. [Register as a Product Category Owner](#21-register-as-a-product-category-owner),
-	2. [Register a New Product Category](#22-register-a-new-product-category), 
-3) [Prepare the README file for Users and Providers](#3-prepare-the-readme-file-for-users-and-providers).
-4) [Grow Your Product Category by Onboarding Providers, Validators and Users](#4-grow-your-product-category).
+This repository contains instructions and code templates for innovators who want to create their own Product Categories, grow them and earn passive income. What is required of a potential Product Category Owner is to:
+
+1. [Fork and edit the repository](#1-fork-and-edit-the-repository),
+2. [Registering in the Protocol](#2-registering-in-the-protocol),
+   1. [Register as a Product Category Owner](#21-register-as-a-product-category-owner),
+   2. [Register a New Product Category](#22-register-a-new-product-category),
+3. [Prepare the README file for Users and Providers](#3-prepare-the-readme-file-for-users-and-providers).
+4. [Grow Your Product Category by Onboarding Providers, Validators and Users](#4-grow-your-product-category).
 
 ## Quickstart
 
@@ -151,7 +152,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 
 All Actors such as Product Category Owners, Providers and Validators need to register in the Protocol and pay the registration fee before they can start any type of interactions.
 
-TESTNET NOTE: if you need testnet tokens reach out to the Forest Protocols team on Discord.
+**TESTNET NOTE**: if you need testnet tokens reach out to the Forest Protocols team on [Discord](https://discord.gg/2MsTWq2tc7).
 
 1. Create a JSON detail file in the following schema and save it somewhere:
 
@@ -178,13 +179,125 @@ TESTNET NOTE: if you need testnet tokens reach out to the Forest Protocols team 
 
 #### 2.2 Register a New Product Category
 
-Each Product Category is a separate smartcontract that is deployed by the Registry main protocol contract. To deploy a new Product Category:
-1. Create a file with detailed information about this Product Category. The file can be in plain text, Markdown or any other format that you want. 
+Each Product Category is a separate smart contract that is deployed by the Registry main protocol contract. To deploy a new Product Category:
+
+First, you need to create a file containing detailed information about this Product Category. You have two options to do this:
+
+##### **Option 1:** Human-Readable Format
+
+You can create a plain text, Markdown, or any other format with human-readable content, such as the example below:
+
+```
+# Blueprint to 3D Model (Sketch to 3D)
+
+## Goal
+
+This subnet aims to convert blueprints, hand-drawn sketches, or simple CAD drawings into detailed 3D models. The goal is to enable quick visualization of architectural, product, or mechanical designs.
+
+## Evaluation
+
+Responses will be evaluated based on:
+
+✅ Structural Accuracy: The 3D model should correctly represent the original sketch.
+✅ Rendering Quality: The model should be free of graphical artifacts.
+✅ Material & Texture Fidelity: If provided, material properties should be correctly applied.
+........
+```
+
+##### **Option 2:** Structured JSON
+
+Alternatively, you can create a JSON file following the type definitions below. With this approach, the details of this Product Category will be visible in the CLI and Marketplace. Additionally, all Offers registered by Providers in this Product Category must set all the parameters defined in the JSON file.
+
+> These are pseudo-type definitions to illustrate the JSON schema.
+
+```typescript
+type ProductCategoryDetails = {
+  /* Descriptive name of the Product Category */
+  name: string;
+
+  /* The tests will be doing by the Validators */
+  tests: any[];
+
+  /* Software/Type of the Product Category such as "Database", "VM" or "API Service" etc. */
+  softwareStack?: string;
+
+  /* Version of the Product that is going to be served in this Product Category */
+  version?: string;
+
+  /* The parameters that each Offer which registered in this PC has to include */
+  offerParams: {
+    /* Visible name of the parameter */
+    name: string;
+
+    /*
+     * For numeric values, it is a string which specifies
+     * the unit of that number, otherwise possible
+     * values for the field.
+     */
+    unit: string | string[];
+
+    /* Priority of the Offer param in the Marketplace filter list */
+    priority?: number;
+
+    /* Defines is this Offer param can be filterable in Marketplace */
+    isFilterable?: boolean;
+
+    /* Defines is this Offer param is a primary info or not */
+    isPrimary?: boolean;
+  }[];
+};
+```
+
+An example JSON file based on these type definitions:
+
 ```json
 {
-	"TODO": "example file"
+  "name": "PostgreSQL",
+  "softwareStack": "Database",
+  "tests": [],
+  "offerParams": [
+    {
+      "name": "CPU",
+      "unit": "Cores",
+      "priority": 100,
+      "isPrimary": true
+    },
+    {
+      "name": "RAM",
+      "unit": "GB",
+      "priority": 90,
+      "isPrimary": true
+    },
+    {
+      "name": "Disk Type",
+      "unit": ["SSD", "HDD", "M2"],
+      "priority": 80,
+      "isPrimary": true
+    },
+    {
+      "name": "Disk Size",
+      "unit": "GB",
+      "priority": 70
+    },
+    {
+      "name": "Virtualization",
+      "unit": ["VM", "Container"],
+      "priority": 60
+    },
+    {
+      "name": "CPU Architecture",
+      "unit": ["x86", "ARM"]
+    },
+    {
+      "name": "Isolation",
+      "unit": ["Shared", "Dedicated"],
+      "isFilterable": false,
+      "priority": 40
+    }
+  ]
 }
 ```
+
 2. Save it at `data/details/[file name]` in your forked Provider Template repository.
 
 ```sh
@@ -220,7 +333,7 @@ forest product-category create \
 
 ### 3. Prepare the README file for Users and Providers
 
-Now you need to create a human-readable specification of your Product Category. You have total freedom to shape this document in a way you think is best. However we provide two templates for inspiration (`README_template_1.md`: [here](./README_template_1.md)) and (`README_template_2.md`: [here](./README_template_2.md)). Rename the chosen file to `README.md` (this will override this, but that's fine). 
+Now you need to create a human-readable specification of your Product Category. You have total freedom to shape this document in a way you think is best. However we provide two templates for inspiration (`README_template_1.md`: [here](./README_template_1.md)) and (`README_template_2.md`: [here](./README_template_2.md)). Rename the chosen file to `README.md` (this will override this, but that's fine).
 
 From now on the `README.md` will include basic information about your PC that might be interesting to Users. It also links to a Provider tutorial on how to easily integrate with your Product Category. So the last thing you need to do is customize the information by filling out the missing parts in your PC's `README.md` as well as in the `README_Become_a_Provider.md`.
 
