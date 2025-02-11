@@ -20,7 +20,7 @@ As a Product Category Owner you want to make life easy on Providers that will be
 
 Fork this repository and clone it locally. Open the `src/product-category/base-provider.ts` file. The first step is to define the details each resource will have. At the beginning of the file, there is a type definition named `ExampleProductDetails`, which specifies the attributes stored in the daemon's database for each resource in this Product Category.
 
-Details of a resource are most likely its credentials. They will be accessible for the Users (unless you prefix the detail name with `_`) and can also be used internally by Providers serving in this Product Category. For instance, these details might include connection strings for a Database resource or endpoints and API keys for an API service resource.
+Details of a resource are most likely the data that would be useful for the Users to see or the configuration that has to be used internally in order to handle the resource. They can be accessible by Users unless you prefix the detail name with `_`. For instance, these details might include connection strings for a Database resource or endpoints and API keys for an API service resource.
 
 Rename the type to match your product and edit the fields accordingly. An example type definition for the SQLite Product Category is shown below:
 
@@ -29,7 +29,7 @@ export type SQLiteDatabaseDetails = ResourceDetails & {
   // Fields should use PascalCase with underscores for spaces
   Size_MB: number; // Database file size in MB
 
-  // Fields starting with an underscore are for internal use only and won't be seen by the users.
+  // Fields starting with an underscore are for internal use only and won't be seen by the Users.
   _fileName: string; // SQLite database file name
 };
 ```
