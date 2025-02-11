@@ -152,7 +152,7 @@ export class MainProviderImplementation extends BaseExampleProductProvider {
 
 All Actors such as Product Category Owners, Providers and Validators need to register in the Protocol and pay the registration fee before they can start any type of interactions.
 
-**TESTNET NOTE**: if you need testnet tokens reach out to the Forest Protocols team on [Discord](https://discord.gg/2MsTWq2tc7).
+**TESTNET NOTE**: if you need testnet tokens reach out to the Forest Protocols team on [Discord](https://discord.gg/8F8V8gEgua).
 
 1. Create a JSON detail file in the following schema and save it somewhere:
 
