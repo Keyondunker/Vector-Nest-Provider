@@ -137,7 +137,7 @@ class Database {
         .innerJoin(
           schema.productCategoriesTable,
           eq(
-            schema.productCategoriesTable.address,
+            schema.productCategoriesTable.id,
             schema.resourcesTable.pcAddressId
           )
         )
