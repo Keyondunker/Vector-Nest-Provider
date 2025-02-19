@@ -1,23 +1,29 @@
-# Product Category: Vector Storage
+# Create a new Protocol
 
-## Description
+Forest Protocols consists of a multitude of Protocols (aka Product Categories) that are incentivized to accelerate digital innovation and prove their worth to the users by building in-demand services. Every digital service can become a Protocol within Forest Protocols. The diversity of Protocols together with Protocol's inherent interoperability is what adds up to its strength.
+
+The Protocol is permissionless and everyone is allowed to create a new Protocol.
+
+This repository contains instructions and code templates for innovators who want to create their own Protocols, grow them and earn passive income. What is required of a potential Protocol Owner is to:
+
+1. [Fork and edit the repository](#1-fork-and-edit-the-repository),
+2. [Registering in the Protocol](#2-registering-in-the-protocol),
+   1. [Register as a Protocol Owner](#21-register-as-a-product-category-owner),
+   2. [Register a New Protocol](#22-register-a-new-product-category),
+3. [Prepare the README file for Users and Providers](#3-prepare-the-readme-file-for-users-and-providers).
+4. [Grow Your Protocol by Onboarding Providers, Validators and Users](#4-grow-your-product-category).
 
 This product category aims to create a competition between different Vector Database solutions such as Milvus, pgvector, Chroma etc.
 
-## Basic Info
+As a Protocol Owner you want to make life easy on Providers that will be adding offers to your PC and servicing clients. That's why you need to create a Provider Template that each Provider will be running to cater to its clients. We have already implemented all of the Protocol level functionality. The only thing you need to do is to define the Protocol specific code.
 
-| Name                      | Value                                                           |
-| ------------------------- | --------------------------------------------------------------- |
-| PC Smart Contract Address | `0x7069D0F75198d99df4F640C6fFC1f33FBA3e6EF0`                    |
-| PC Registration Date      | `10 February`                                                   |
-| PC Owner Website          | `N/A`                                                           |
-| PC Owner Contact Info     | `N/A`                                                           |
-| PC Owner Wallet Address   | `0x765765F597222b524F0412a143094E118ddAB5Fd`                    |
-| PC Owner Details File CID | `bagaaieragqajouwstkk2abb2ofiutun3tf5ba5dt7gnbo6kkx5o7qucc5jia` |
+### 1. Fork and edit the repository
 
-## Configuration Parameters
+Fork this repository and clone it locally. Open the `src/product-category/base-provider.ts` file. The first step is to define the details each resource will have. At the beginning of the file, there is a type definition named `ExampleProductDetails`, which specifies the attributes stored in the daemon's database for each resource in this Protocol.
 
-This Product Category has the following configuration. Some of them are enforced by the logic of the on-chain smart contract an the others are Validator code.
+Details of a resource are most likely the data that would be useful for the Users to see or the configuration that has to be used internally in order to handle the resource. They can be accessible by Users unless you prefix the detail name with `_`. For instance, these details might include connection strings for a Database resource or endpoints and API keys for an API service resource.
+
+Rename the type to match your product and edit the fields accordingly. An example type definition for the SQLite Protocol is shown below:
 
 | Config                                   | Value                                                           | Enforced by    |
 | ---------------------------------------- | --------------------------------------------------------------- | -------------- |
@@ -37,23 +43,24 @@ This Product Category has the following configuration. Some of them are enforced
 | Price-to-Performance Optimization Weight | `[WIP]`                                                         | Validator      |
 | Popularity Optimization Weight           | `[WIP]`                                                         | Validator      |
 
-You can always double-check the on-chain values e.g. [here](https://sepolia-optimism.etherscan.io/address/0x7069D0F75198d99df4F640C6fFC1f33FBA3e6EF0#readContract)
+// Fields starting with an underscore are for internal use only and won't be seen by the Users.
+\_fileName: string; // SQLite database file name
+};
 
-## Endpoints
+````
 
-| Method-Path          | Params/Body                                                                                                                                                                                                                                                      | Response                 | Description                                                                                                                                                                                    |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /details`       | `body: string[]`                                                                                                                                                                                                                                                 | `string[]`               | Retrieves the contents of detail files for the given CIDs. If one CID is given and corresponding file is not found, returns 404/Not Found. Otherwise returns an array of contents of the files |
-| `GET /resources`     | `params: { id?: number, pc?: Address }`                                                                                                                                                                                                                          | `Resource[] \| Resource` | If `id` and `pc` is given, retrieves one resource information. Otherwise returns all resources of the requester                                                                                |
-| `POST /collection`   | `body: { id: number, pc: Address, name: string, fields: { name: string, type: "String" \| "Integer32" \| "Integer64" \| "Float" \| "Vector" \| "Boolean", properties?: { isPrimary?: boolean, default?: any, dimension?: number, autoIncrement?: boolean }}[] }` | `None`                   | Creates a new collection in the resource.                                                                                                                                                      |
-| `DELETE /collection` | `body: { id: number, pc: Address, name: string }`                                                                                                                                                                                                                | `None`                   | Deletes a collection from the resource.                                                                                                                                                        |
-| `POST /search`       | `body: { id: number, pc: Address, collection: string, vectorField: string, embeddings: any[], options?: { limit?: number, metricType?: "l2" \| "ip" \| "cosine" \| "jaccard" \| "hamming" } }`                                                                   | `any[]`                  | Searches in the collection for the given vectors.                                                                                                                                              |
-| `POST /data`         | `body: { id: number, pc: Address, collection: string, data: { [fieldName: string]: any }[] }`                                                                                                                                                                    | `None`                   | Inserts the given data into a collection.                                                                                                                                                      |
-| `DELETE /data`       | `body: { id: number, pc: Address, collection: string, conditions: { [fieldName: string]: string \| number \| boolean \| { operator: "=" \| ">" \| "<" \| ">=" \| "<=" \| "!=" \| "LIKE" \| "like" \| "in" \| "IN", value: any } }`                               | `None`                   | Deletes the records from a collection that matches with the given conditions.                                                                                                                  |
+Once you have defined the details type, update the `BaseExampleProductProvider` abstract class to define this product's supported methods / functionality. This is a set of actions that Users can request your Providers to complete if they have an active Agreement for a service in your PC. All Providers within this Protocol must implement all functions you define in this class. Rename the class to reflect your product. For example:
+
+```typescript
+export abstract class BaseSQLiteDatabaseProvider extends AbstractProvider<SQLiteDatabaseDetails> {
+  /**
+   * Defines the product's functionality. All functions below
+   * must be implemented by Providers in this Protocol.
+   */
 
 ## Tests and Quality Thresholds [WIP]
 
-The Validators are performing a number of tests on Resources to ensure quality across the board. Below is a list of checked Benchmarks:
+After defining your product's functionalities (e.g., `sqlQuery`), you need to create "Pipe" endpoints to allow Users to invoke these functions.
 
 | Name          | Units     | Threshold Value | Min / Max   |
 | ------------- | --------- | --------------- | ----------- |
@@ -73,11 +80,60 @@ More in-depth descriptions of the Tests:
 
 ### Step-by-step instructions
 
-In order to start providing services for this Product Category you need to follow the steps below. But before, you need to install Forest Protocols CLI by following these instructions: [link](https://github.com/Forest-Protocols/forest-cli)
+        /**
+         * Parameters can be extracted from `req.body` or `req.params`.
+         * Here, we use `req.body`.
+         *
+         * We validate the body params using [Zod](https://zod.dev/)
+         * to ensure they conform to the expected schema.
+         */
+        const body = validateBodyOrParams(req.body, z.object({
+            id: z.number(), // Resource ID
+            pc: addressSchema, // Protocol address
+            query: z.string(), // SQL query
+        }));
 
 #### 1. Register in the Protocol
 
-> You can skip this part if you are already registered in the Protocol as a Provider.
+        // Execute the SQL query with the provided arguments
+        const result = await this.sqlQuery(resource, body.query);
+
+        // Return the response
+        return {
+          code: PipeResponseCode.OK,
+          body: result,
+        };
+    });
+}
+````
+
+Once you are done with defining the abstract class, navigate to `src/product-category/provider.ts` and add a boilerplate implementation for your base class. For example:
+
+```typescript
+/**
+ * The main class that implements Provider specific actions.
+ * @responsible Provider
+ */
+export class MainProviderImplementation extends BaseExampleProductProvider {
+  // Other abstract functions...
+
+  async sqlQuery(resource: Resource, query: string): Promise<any[]> {
+    /**
+     * TODO: Implement how to execute an SQL query within the database.
+     * This function should process the query and return results accordingly.
+     */
+    throw new Error("Method not implemented.");
+  }
+}
+```
+
+### 2. Registering in the Protocol
+
+#### 2.1 Register as a Protocol Owner
+
+All Actors such as Protocol Owners, Providers and Validators need to register in the Protocol and pay the registration fee before they can start any type of interactions.
+
+**TESTNET NOTE**: if you need testnet tokens reach out to the Forest Protocols team on [Discord](https://discord.gg/8F8V8gEgua).
 
 1. Create a JSON detail file in the following schema and save it somewhere:
 
@@ -93,7 +149,7 @@ In order to start providing services for this Product Category you need to follo
 3. Take that account's private key and save it to a file.
 4. Put the JSON file and that private key file into the same folder.
 5. Open up a terminal in that folder.
-   > If you are planning to use different accounts for billing and operating, you need to pass additional flags: `--billing <address>` and `--operator <address>`. If you don't need that, just skip those flags.
+   > If you are planning to use different accounts for billing and operating, you need to pass additional flags: `--billing <address>` and `--operator <address>`. This separation increases security of your configuration. Setting a billing address allows for having a separate address / identity for claiming your earnings and rewards while setting an operator allows you to delegate the operational work of running a daemon and servicing user requests to a third-party or a hotkey. If you don't need that, just skip those flags and the logic of the Protocol will use your main address as your billing and operator address.
 6. Run the following command:
    ```sh
     forest register provider \
@@ -102,9 +158,128 @@ In order to start providing services for this Product Category you need to follo
    ```
 7. Save your detail file somewhere. Later you'll place this file into `data/details` folder.
 
-#### 2. Register in this Product Category
+#### 2.2 Register a New Protocol
 
-Use the following command to register in this Product Category:
+Each Protocol is a separate smart contract that is deployed by the Registry main protocol contract. To deploy a new Protocol:
+
+First, you need to create a file containing detailed information about this Protocol. You have two options to do this:
+
+##### **Option 1:** Human-Readable Format
+
+You can create a plain text, Markdown, or any other format with human-readable content, such as the example below:
+
+```
+# Blueprint to 3D Model (Sketch to 3D)
+
+## Goal
+
+This subnet aims to convert blueprints, hand-drawn sketches, or simple CAD drawings into detailed 3D models. The goal is to enable quick visualization of architectural, product, or mechanical designs.
+
+## Evaluation
+
+Responses will be evaluated based on:
+
+✅ Structural Accuracy: The 3D model should correctly represent the original sketch.
+✅ Rendering Quality: The model should be free of graphical artifacts.
+✅ Material & Texture Fidelity: If provided, material properties should be correctly applied.
+........
+```
+
+##### **Option 2:** Structured JSON
+
+Alternatively, you can create a JSON file following the type definitions below. With this approach, the details of this Protocol will be visible in the CLI and Marketplace. Additionally, all Offers registered by Providers in this Protocol must set all the parameters defined in the JSON file.
+
+> These are pseudo-type definitions to illustrate the JSON schema.
+
+```typescript
+type ProductCategoryDetails = {
+  /* Descriptive name of the Protocol */
+  name: string;
+
+  /* The tests will be doing by the Validators */
+  tests: any[];
+
+  /* Software/Type of the Protocol such as "Database", "VM" or "API Service" etc. */
+  softwareStack?: string;
+
+  /* Version of the Product that is going to be served in this Protocol */
+  version?: string;
+
+  /* The parameters that each Offer which registered in this PC has to include */
+  offerParams: {
+    /* Visible name of the parameter */
+    name: string;
+
+    /*
+     * For numeric values, it is a string which specifies
+     * the unit of that number, otherwise possible
+     * values for the field.
+     */
+    unit: string | string[];
+
+    /* Priority of the Offer param in the Marketplace filter list */
+    priority?: number;
+
+    /* Defines is this Offer param can be filterable in Marketplace */
+    isFilterable?: boolean;
+
+    /* Defines is this Offer param is a primary info or not */
+    isPrimary?: boolean;
+  }[];
+};
+```
+
+An example JSON file based on these type definitions:
+
+```json
+{
+  "name": "PostgreSQL",
+  "softwareStack": "Database",
+  "tests": [],
+  "offerParams": [
+    {
+      "name": "CPU",
+      "unit": "Cores",
+      "priority": 100,
+      "isPrimary": true
+    },
+    {
+      "name": "RAM",
+      "unit": "GB",
+      "priority": 90,
+      "isPrimary": true
+    },
+    {
+      "name": "Disk Type",
+      "unit": ["SSD", "HDD", "M2"],
+      "priority": 80,
+      "isPrimary": true
+    },
+    {
+      "name": "Disk Size",
+      "unit": "GB",
+      "priority": 70
+    },
+    {
+      "name": "Virtualization",
+      "unit": ["VM", "Container"],
+      "priority": 60
+    },
+    {
+      "name": "CPU Architecture",
+      "unit": ["x86", "ARM"]
+    },
+    {
+      "name": "Isolation",
+      "unit": ["Shared", "Dedicated"],
+      "isFilterable": false,
+      "priority": 40
+    }
+  ]
+}
+```
+
+2. Save it at `data/details/[file name]` in your forked Provider Template repository.
 
 ```shell
 forest provider register-in \
@@ -115,168 +290,25 @@ forest provider register-in \
 
 #### 3. Register Offers
 
-Now that you are registered in the Protocol and this Product Category, the next step is to register your Offers.
+| Flag                       | Description                                                  |
+| -------------------------- | ------------------------------------------------------------ |
+| `--max-validator`          | Maximum number of Validators that can be registered.         |
+| `--max-provider`           | Maximum number of Providers that can be registered.          |
+| `--min-collateral`         | Minimum FOREST token collateral required for a registration. |
+| `--validator-register-fee` | Registration fee (FOREST token) for Validators.              |
+| `--provider-register-fee`  | Registration fee (FOREST token) for Providers.               |
+| `--offer-register-fee`     | Fee for Providers to register a new Offer.                   |
+| `--term-update-delay`      | Minimum block count before Providers can close agreements.   |
+| `--provider-share`         | Percentage of emissions allocated to Providers.              |
+| `--validator-share`        | Percentage of emissions allocated to Validators.             |
+| `--pco-share`              | Percentage of emissions allocated to the Protocol Owner.     |
 
-First, create files that contain details for each Offer you plan to register. You have two options for these detail files:
+### 3. Prepare the README file for Users and Providers
 
-- Create a plain text or Markdown file with human-readable Offer details. This approach does not allow parameterization of Offers. Also these details won't be visible in the CLI.
-- Create a JSON file following the schema below. This approach makes Offer details visible and filterable in the CLI and marketplace while also allowing parameterization of resource creation.
+Now you need to create a human-readable specification of your Protocol. You have total freedom to shape this document in a way you think is best. However we provide two templates for inspiration (`README_template_1.md`: [here](./README_template_1.md)) and (`README_template_2.md`: [here](./README_template_2.md)). Rename the chosen file to `README.md` (this will override this, but that's fine).
 
-##### 3.1 JSON Schemed Offer Details
+From now on the `README.md` will include basic information about your PC that might be interesting to Users. It also links to a Provider tutorial on how to easily integrate with your Protocol. So the last thing you need to do is customize the information by filling out the missing parts in your PC's `README.md` as well as in the `README_Become_a_Provider.md`.
 
-**If you are not using this option, you may skip this section.**
+### 4. Grow Your Protocol
 
-Create a JSON file following the type definitions below:
-
-> These are pseudo-type definitions to illustrate the JSON schema.
-
-```typescript
-type Numeric_Offer_Parameter = {
-  value: number;
-  unit: string;
-};
-
-type Single_Offer_Parameter = string | boolean | Numeric_Offer_Parameter;
-
-type Multiple_Offer_Parameter = Single_Offer_Parameter[];
-
-type Offer_Parameter = Single_Offer_Parameter | Multiple_Offer_Parameter;
-
-type JSON_Offer_Details = {
-  name: string; // Descriptive name
-  deploymentParams?: any; // Deployment parameters for resource creation in the Provider daemon.
-
-  // Visible parameters to users
-  params: {
-    [visible_parameter_name: string]: Offer_Parameter;
-  };
-};
-```
-
-An example JSON file based on these type definitions:
-
-```json
-{
-  "name": "SQLite Cheap Small Disk",
-  "deploymentParams": {
-    "maxRAM": "512",
-    "diskSize": "1024"
-  },
-  "params": {
-    "RAM": {
-      "value": 512,
-      "unit": "MB"
-    },
-    "Disk Size": {
-      "value": 1,
-      "unit": "GB"
-    },
-    "Disk Type": "SSD",
-    "Features": ["Query over Pipe", "Super cheap"]
-  }
-}
-```
-
-After creating the Offer details file, save it in an accessible location. Now register your Offer using the following command:
-
-```shell
-forest provider register-offer \
-    0x7069D0F75198d99df4F640C6fFC1f33FBA3e6EF0 \
-    --account <private key file path OR private key itself of the PROV account> \
-    --details <path of the details file> \
-    --fee 1 \
-    --stock 100
-```
-
-- `--fee`: The per-second price of the Offer in USDC. 1 unit of fee = 2.60 USDC per month.
-- `--stock`: The maximum number of Agreements that can exist simultaneously for this Offer.
-
-#### 4. Fork and Implement This Repository
-
-Fork this repository, then clone it locally.
-
-Open the `src/product-category/provider.ts` file and implement all of the following methods;
-
-| Method                                                                                                                                                                                  | Description                                                                                                                                                                                                                                                                                                                          |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `create(agreement: Agreement, offer: DetailedOffer): Promise<*Details>`                                                                                                                 | This method is triggered when a user enters an Agreement. It provisions the actual resource based on the Agreement and Offer, returning resource details. If provisioning takes time, it returns a `Deploying` status. The daemon process then tracks the deployment using `getDetails` until the resource reaches `Running` status. |
-| `getDetails(agreement: Agreement, offer: DetailedOffer, resource: Resource): Promise<*Details>`                                                                                         | Called periodically if the resource is not in `Running` status after `create()`. It retrieves current details about the resource from the actual source. The daemon process saves the returned details to the database after each call.                                                                                              |
-| `delete(agreement: Agreement, offer: DetailedOffer, resource: Resource): Promise<void>`                                                                                                 | Called when a user closes an Agreement, ensuring the actual resource is deleted.                                                                                                                                                                                                                                                     |
-| `search(agreement: Agreement, resource: Resource, collection: string, vectorField: string, embeddings: any[], options?: { limit?: number; metricType?: MetricType; } ): Promise<any[]>` | Retrieves the nearest neighbors for the given embeddings.                                                                                                                                                                                                                                                                            |
-| `insertData(agreement: Agreement, resource: Resource, collection: string, data: { [field: string]: any }[] ): Promise<void>`                                                            | Insert data into a collection.                                                                                                                                                                                                                                                                                                       |
-| `deleteData(agreement: Agreement, resource: Resource, collection: string, conditions: { [field: string]: ConditionValue } ): Promise<void>`                                             | Deletes data from a collection                                                                                                                                                                                                                                                                                                       |
-| `createCollection(agreement: Agreement,  resource: Resource, name: string, fields: Field[]): Promise<void>`                                                                             | Creates a new collection.                                                                                                                                                                                                                                                                                                            |
-| `deleteCollection(agreement: Agreement, resource: Resource, name: string): Promise<void>`                                                                                               | Deletes a collection.                                                                                                                                                                                                                                                                                                                |
-
-Once implementation is complete, place your Provider and Offer detail files into the `data/details` folder.
-
-> You can create subdirectories to better organize detail files.
-
-Now, create a `.env` file based on the example (`.env.example`) and configure the necessary variables:
-
-| Name           | Possible Values                                              | Default     | Description                                           |
-| -------------- | ------------------------------------------------------------ | ----------- | ----------------------------------------------------- |
-| `NODE_ENV`     | `dev`, `production`                                          | `dev`       | The environment mode.                                 |
-| `RPC_URL`      | An RPC host without the protocol part (`http://` or `ws://`) | `undefined` | The RPC host used to communicate with the blockchain. |
-| `CHAIN`        | `anvil`, `optimism`, `optimism-sepolia`                      | `anvil`     | Specifies the blockchain to use.                      |
-| `DATABASE_URL` | PostgreSQL connection string                                 | `undefined` | The database connection string for the daemon.        |
-
-Then rename `data/providers.example.jsonc` to `data/providers.json`, clear the comments inside of it and fill the `main` tag with your private keys.
-
-As the last step, don't forget to put detail files of the Provider, Product Category and Offers into `data/details` folder.
-
-#### 5. Run the Provider Daemon
-
-You can run the daemon process with or without a container.
-
-##### 5.1 Without a Container
-
-> Ensure you have a running PostgreSQL database before proceeding.
-
-Run the following commands in the daemon directory:
-
-```sh
-npm i
-npm run build
-npm run db:migrate
-npm run start
-```
-
-##### 5.2 With a Container
-
-If you prefer to use containers, build the container image and run it with Docker Compose. First, update the `DATABASE_URL` host to point to the database container:
-
-```dotenv
-...
-# Update the host to "db"
-# Database credentials are defined in "docker-compose.yaml";
-# update the compose file if you change them.
-DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
-
-# If using a local Foundry blockchain, update the RPC_HOST variable.
-# RPC_HOST=172.17.0.1:8545
-...
-```
-
-Now run the compose file:
-
-```shell
-docker compose up # Add "-d" to run in detached mode
-```
-
-That's all folks!
-
-## Become a Validator [WIP]
-
-#### Step-by-step instructions
-
-In order to start providing validation services for this Product Category you need to:
-
-1. Run your Validator Node based on the code from this repository. Detailed instructions here: [link](https://github.com/this_repo/validator/README.md)
-2. Install a Forest Protocols CLI by following these instructions: [link](https://github.com/forest-protocols/cli....)
-3. Using the CLI register in the Protocol as a Validator:
-   a. `command 1`
-   b. `command 2`
-4. Using the CLI register in our Product Category:
-   a. `command 1`
-   b. `command 2`
+Congratulations! You have registered in the Protocol and created your Protocol. Now, publish your Provider Template and inform potential Providers and Validators on how to participate in your Protocol.

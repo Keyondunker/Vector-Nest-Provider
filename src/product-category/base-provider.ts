@@ -13,7 +13,7 @@ import { DB } from "@/database/Database";
 import { PipeErrorNotFound } from "@/errors/pipe/PipeErrorNotFound";
 
 /**
- * The details gathered by the provider from the resource source.
+ * The details gathered by the Provider from the resource source.
  * This is the "details" type of each resource and it is stored in the database.
  * @responsible Product Category Owner
  */
@@ -76,7 +76,7 @@ const metricTypeSchema = z.union([
 export type MetricType = z.infer<typeof metricTypeSchema>;
 
 /**
- * Base provider that defines what kind of actions needs to be implemented for the product category.
+ * Base Provider that defines what kind of actions needs to be implemented for the Product Category.
  * @responsible Product Category Owner
  */
 export abstract class BaseVectorDBProvider extends AbstractProvider<VectorDBDetails> {

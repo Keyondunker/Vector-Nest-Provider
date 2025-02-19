@@ -104,7 +104,10 @@ class Database {
     const [resource] = await this.resourceQuery(pc.address).where(
       and(
         eq(schema.resourcesTable.id, id),
-        eq(schema.resourcesTable.ownerAddress, ownerAddress),
+        eq(
+          sql`LOWER(${schema.resourcesTable.ownerAddress})`,
+          ownerAddress.toLowerCase()
+        ),
         eq(schema.resourcesTable.pcAddressId, pc.id)
       )
     );
@@ -137,7 +140,7 @@ class Database {
         .innerJoin(
           schema.productCategoriesTable,
           eq(
-            schema.productCategoriesTable.address,
+            schema.productCategoriesTable.id,
             schema.resourcesTable.pcAddressId
           )
         )
