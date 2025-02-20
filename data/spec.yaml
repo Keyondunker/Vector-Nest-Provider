@@ -1,0 +1,324 @@
+openapi: 3.0.0
+info:
+  x-forest-cli-command: vectordb
+  title: Vector Storage Protocol API
+  version: "1.0"
+  license:
+    name: MIT
+paths:
+  /collection:
+    post:
+      x-forest-provider-endpoint: true
+      description: Creates a new collection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - pc
+                - name
+                - fields
+              properties:
+                id:
+                  type: number
+                  description: ID of the resource
+                pc:
+                  type: string
+                  description: Protocol address that the Resource created in
+                name:
+                  type: string
+                  description: Name of the collection.
+                fields:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - type
+                    properties:
+                      name:
+                        type: string
+                        description: Name of the field
+                      type:
+                        type: string
+                        description: Type of the field
+                        enum:
+                          - String
+                          - Integer32
+                          - Integer64
+                          - Float
+                          - Vector
+                          - Boolean
+                      properties:
+                        description: Additional properties a field can have
+                        type: object
+                        properties:
+                          isPrimary:
+                            type: boolean
+                          default:
+                            $ref: "#/components/schemas/AnyValue"
+                          dimension:
+                            type: number
+                          autoIncrement:
+                            type: boolean
+
+      responses:
+        "200":
+          description: "Creation is successful"
+          content: {}
+    delete:
+      x-forest-provider-endpoint: true
+      description: Deletes a collection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - pc
+                - name
+              properties:
+                id:
+                  type: number
+                  description: ID of the resource
+                pc:
+                  type: string
+                  description: Protocol address that the Resource created in
+                name:
+                  type: string
+                  description: Name of the collection.
+      responses:
+        "200":
+          description: "Deletion is successful"
+          content: {}
+  /data:
+    post:
+      x-forest-provider-endpoint: true
+      description: Inserts the given data into a collection.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - pc
+                - collection
+                - data
+              properties:
+                id:
+                  type: number
+                  description: ID of the resource
+                pc:
+                  type: string
+                  description: Protocol address that the Resource created in
+                collection:
+                  type: string
+                  description: Name of the collection.
+                data:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/AnyValue"
+
+      responses:
+        "200":
+          description: "Insertion is successful"
+          content: {}
+    delete:
+      x-forest-provider-endpoint: true
+      description: Deletes the records from a collection that matches with the given conditions.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - pc
+                - collection
+                - conditions
+              properties:
+                id:
+                  type: number
+                  description: ID of the resource
+                pc:
+                  type: string
+                  description: Protocol address that the Resource created in
+                collection:
+                  type: string
+                  description: Name of the collection.
+                conditions:
+                  type: object
+                  properties:
+                    fieldName:
+                      oneOf:
+                        - type: string
+                        - type: number
+                        - type: boolean
+                        - type: object
+                          properties:
+                            value:
+                              $ref: "#/components/schemas/AnyValue"
+                            operator:
+                              type: string
+                              enum:
+                                - "="
+                                - ">"
+                                - "<"
+                                - ">="
+                                - "<="
+                                - "!="
+                                - "LIKE"
+                                - "like"
+                                - "IN"
+                                - "in"
+
+      responses:
+        "200":
+          description: "Insertion is successful"
+          content: {}
+  /search:
+    post:
+      x-forest-provider-endpoint: true
+      description: Searches in the collection for the given vectors.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - pc
+                - collection
+                - vectorField
+                - embeddings
+              properties:
+                id:
+                  type: number
+                  description: ID of the resource
+                pc:
+                  type: string
+                  description: Protocol address that the Resource created in
+                collection:
+                  type: string
+                  description: Name of the collection.
+                vectorField:
+                  type: string
+                  description: Name of the vector column.
+                embeddings:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/AnyValue"
+                options:
+                  type: object
+                  properties:
+                    limit:
+                      type: number
+                    metricType:
+                      type: string
+                      enum:
+                        - l2
+                        - ip
+                        - cosine
+                        - jaccard
+                        - hamming
+
+      responses:
+        "200":
+          description: "Creation is successful"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnyValue"
+  /resources:
+    get:
+      summary: Get one or all of the resources
+      description: Gets one or all resources of the caller. If "id" and "pc" values are not given, retrieves all of the Resources that caller has. Caller must be the owner of those resource(s).
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: number
+                  description: ID of the resource/agreement
+                pc:
+                  type: string
+                  description: Product Category address
+      responses:
+        "200":
+          description: "Resources"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                    name:
+                      type: string
+                    deploymentStatus:
+                      type: string
+                      enum:
+                        - Running
+                        - Deploying
+                        - Closed
+                        - Unknown
+                        - Failed
+                    details:
+                      type: object
+                    groupName:
+                      type: string
+                    isActive:
+                      type: boolean
+                    ownerAddress:
+                      type: string
+                      example: "0x1231231231231231231231231231231231231231"
+                    offerId:
+                      type: number
+                    providerId:
+                      type: number
+                    providerAddress:
+                      type: string
+                      example: "0x1231231231231231231231231231231231231231"
+                    pcAddress:
+                      type: string
+                      example: "0x1231231231231231231231231231231231231231"
+        "404":
+          description: "Resource not found"
+  /details:
+    get:
+      summary: Gets the detail file(s)
+      description: Gets the detail files for the given CIDs if they there are in this operator
+      requestBody:
+        description: CIDs of the desired detail files
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        "200":
+          description: Returns the file contents. If the CID is not found, it won't be included in the response array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "404":
+          description: If one CID is given and it is not found
+components:
+  schemas:
+    AnyValue:
+      description: "Can be anything: string, number, array, object, etc., including `null`"
