@@ -1,0 +1,26 @@
+chain: "optimism-sepolia"
+{
+    "rpcHost": "https://optimism-sepolia.core.chainstack.com/ede219431c3a008dbae9e9db33bcf603", "chain":   "optimism-sepolia" 
+}
+
+
+✔ Product Category Owner registration is completed!
+ID        : 15
+Actor CID : bagaaierawnzgp2ci44wfkzp7iszjujb746h6du4mjlzl5vgjkif2tm7mrsjq
+Address   : 0x7Bd47Ae1ca30D64D601d125B502A2D7f2cF92396
+✔ Product Category creation is completed!
+PC CID  : bagaaiera362lzzumls4nasdxuk3jeh5puiavczlld2k52t57onqwigdu5ava
+Address : 0xEdFCb7924301e38276291E9E81B90B9e2d6D7449
+
+
+Ethereum: flash link country office brain region father pair usual frog half frozen (Forest)
+Public Key: 0x7Bd47Ae1ca30D64D601d125B502A2D7f2cF92396
+Private key: e096c8afca6c0a0b8d27e6ed5d041b4320a49ba17da87fc082fd8b0463e404fa
+
+
+
+//git hub
+useremail: janeayre0720@gmail.com
+github name: keropa-joy
+
+https://github.com/Keropa-Joy
