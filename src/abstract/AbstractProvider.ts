@@ -22,7 +22,7 @@ import {
   Agreement,
   PipeMethod,
   PipeResponseCode,
-  ProductCategory,
+  Protocol,
   Registry,
   XMTPPipe,
 } from "@forest-protocols/sdk";
@@ -34,7 +34,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { z } from "zod";
 
 /**
- * Abstract provider that needs to be extended by the Product Category Owner.
+ * Abstract provider that needs to be extended by the Protocol Owner.
  * @responsible Admin
  */
 export abstract class AbstractProvider<
@@ -42,7 +42,7 @@ export abstract class AbstractProvider<
 > {
   registry!: Registry;
 
-  pcClients: { [address: string]: ProductCategory } = {};
+  pcClients: { [address: string]: Protocol } = {};
 
   account!: Account;
 
@@ -97,13 +97,13 @@ export abstract class AbstractProvider<
     // `DB.upsertProvider` already checked the existence of the details file
     this.details = tryParseJSON(provDetailFile.content);
 
-    const pcAddresses = await this.registry.getRegisteredPCsOfProvider(
+    const pcAddresses = await this.registry.getRegisteredPTsOfProvider(
       provider.id
     );
 
     for (const pcAddress of pcAddresses) {
       this.pcClients[pcAddress.toLowerCase()] =
-        ProductCategory.createWithClient(
+        Protocol.createWithClient(
           rpcClient,
           pcAddress as Address,
           this.account
@@ -195,7 +195,7 @@ export abstract class AbstractProvider<
             /** ID of the resource. */
             id: z.number().optional(),
 
-            /** Product category address that the resource created in. */
+            /** Protocol address that the resource created in. */
             pc: addressSchema.optional(), // A pre-defined Zod schema for smart contract addresses.
           })
         );
@@ -212,7 +212,7 @@ export abstract class AbstractProvider<
         // Since XMTP has its own authentication layer, we don't need to worry about
         // if this request really sent by the owner of the resource. So if the sender is
         // different from owner of the resource, basically the resource won't be found because
-        // we are looking to the database with agreement id + requester address + product category address.
+        // we are looking to the database with agreement id + requester address + Protocol address.
         const resource = await DB.getResource(
           params.id,
           req.requester,
@@ -244,7 +244,7 @@ export abstract class AbstractProvider<
   }
 
   /**
-   * Gets the Product Category client from the registered product category list of this provider.
+   * Gets the Protocol client from the registered Protocol list of this provider.
    */
   getPcClient(pcAddress: Address) {
     return this.pcClients[pcAddress.toLowerCase()];
@@ -253,7 +253,7 @@ export abstract class AbstractProvider<
   /**
    * Gets a resource that stored in the database and the corresponding agreement from blockchain
    * @param id ID of the resource/agreement
-   * @param pcAddress Product category address
+   * @param pcAddress Protocol address
    * @param requester Requester of this resource
    */
   protected async getResource(
@@ -271,7 +271,7 @@ export abstract class AbstractProvider<
       throw new PipeErrorNotFound("Resource");
     }
 
-    const pcClient = this.getPcClient(pcAddress); // Product category client.
+    const pcClient = this.getPcClient(pcAddress); // Protocol client.
     const agreement = await pcClient.getAgreement(resource.id); // Retrieve the agreement details from chain
 
     return {
