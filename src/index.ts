@@ -3,7 +3,7 @@ import {
   Agreement,
   DeploymentStatus,
   Offer,
-  ProductCategoryABI,
+  ProtocolABI,
   Status,
 } from "@forest-protocols/sdk";
 import { Address, parseEventLogs } from "viem";
@@ -18,7 +18,7 @@ import {
   colors,
   uniqueNamesGenerator,
 } from "unique-names-generator";
-import { VectorDBProvider } from "./product-category/provider";
+import { VectorDBProvider } from "./protocol/VectorDBProvider";
 import { join } from "path";
 import { readdirSync, readFileSync, statSync } from "fs";
 import { tryParseJSON } from "./utils";
@@ -342,7 +342,7 @@ class Program {
         }
 
         const events = parseEventLogs({
-          abi: ProductCategoryABI,
+          abi: ProtocolABI,
           logs: receipt.logs,
         });
 

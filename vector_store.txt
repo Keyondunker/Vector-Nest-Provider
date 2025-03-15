@@ -24,3 +24,36 @@ useremail: janeayre0720@gmail.com
 github name: keropa-joy
 
 https://github.com/Keropa-Joy
+
+
+
+//my provider key
+
+
+Public Key-- 0x294732B9b43282aB0b96F5206c3aA9fc6528e448
+Private Key-- bb253e55faf8c7a22cc98638be6c376ffd8873ed9c6089579e1276fb5f80d
+
+
+//Provider
+
+√ Allowance has been set successfully
+√ Provider registration is completed!
+ID        : 31
+Address   : 0x294732B9b43282aB0b96F5206c3aA9fc6528e448
+CID       : bagaaieramdt7czygb6a6rry5w72j4pwz4s6au3xbszmvnfzfjkwfu3t4rwcq
+
+
+√ Allowance has been set successfully
+√ Provider successfully registered in the Protocol!
+Actor         : Provider
+Actor ID      : 31
+PT Address    : 0x7069D0F75198d99df4F640C6fFC1f33FBA3e6EF0
+
+
+//offer
+
+PT Address   : 0x7069D0F75198d99df4F640C6fFC1f33FBA3e6EF0
+PROV Address : 0x294732B9b43282aB0b96F5206c3aA9fc6528e448
+PROV ID      : 31
+Offer ID     : 2
+Offer CID    : bagaaierauetun2pcba47cw4vamu3bbiq6ukatpoi2einen7dogp7xko2bz7q

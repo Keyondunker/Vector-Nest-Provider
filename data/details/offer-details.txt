@@ -1,0 +1,2 @@
+Minimum of 2 requests per minute.
+At least 200 API calls per subscription per month.

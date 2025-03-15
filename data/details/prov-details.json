@@ -1,0 +1,5 @@
+{
+    "name": "Vector Storage Provider",
+    "description": "Vector Storage Provider that can be used to store the data as a vector and search for the data using vector search.",
+    "homepage": ""
+}
